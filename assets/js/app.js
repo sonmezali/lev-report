@@ -11,7 +11,25 @@ const blockForm = () => submit.disabled = true;
 const unblockForm = () => submit.disabled = false;
 const formBlocked = () => submit.disabled;
 
-document.getElementById('options').onsubmit = () => {
+const stateChanged = (dateDescription, xhttp) => () => {
+  if (xhttp.readyState === 4) {
+    if (xhttp.status === 200) {
+      const data = JSON.parse(xhttp.responseText);
+      const layout = {
+        title: `LEV usage ${dateDescription}`,
+        barmode: 'stack'
+      };
+
+      Plotly.newPlot('graph', data, layout);
+    } else {
+      console.log('HTTP ERROR:', xhttp.status, xhttp.statusText);
+    }
+    unblockForm();
+  } else {
+    console.log('Update:', xhttp.status, xhttp.statusText);
+  }
+};
+const handleSubmit = event => {
   event.preventDefault();
 
   if (formBlocked()) {
@@ -37,24 +55,7 @@ document.getElementById('options').onsubmit = () => {
   }
 
   const xhttp = new XMLHttpRequest();
-  xhttp.onreadystatechange = () => {
-    if (xhttp.readyState === 4) {
-      if (xhttp.status === 200) {
-        const data = JSON.parse(xhttp.responseText);
-        const layout = {
-          title: `LEV usage ${dateDescription}`,
-          barmode: 'stack'
-        };
-
-        Plotly.newPlot('graph', data, layout);
-      } else {
-        console.log('HTTP ERROR:', xhttp.status, xhttp.statusText);
-      }
-      unblockForm();
-    } else {
-      console.log('Update:', xhttp.status, xhttp.statusText);
-    }
-  };
+  xhttp.onreadystatechange = stateChanged(dateDescription, xhttp);
   xhttp.onabort = () => {
     console.log('Fetching usage ABORTED');
     unblockForm();
@@ -67,3 +68,5 @@ document.getElementById('options').onsubmit = () => {
   xhttp.open('GET', `${url}fromDate=${from.format(SERVER_FORMAT)}`, true);
   xhttp.send();
 };
+
+document.getElementById('options').onsubmit = handleSubmit;
