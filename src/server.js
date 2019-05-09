@@ -11,6 +11,11 @@ server.errors = restify.errors;
 global.logger = server.log;
 require('./lib/routes')(server);
 
+const bundle = fs.readFileSync(path.resolve('public/js/bundle.js'));
+server.get('/public/js/bundle.js', (req, res) => {
+  res.end(bundle);
+});
+
 const index = fs.readFileSync(path.resolve('pages/index.html'));
 server.get('/', (req, res) => {
   res.end(index);
