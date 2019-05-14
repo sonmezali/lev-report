@@ -1,10 +1,5 @@
 'use strict';
 
-const fixtureData = [];
-// const server = sinon.createFakeServer();
-// server.respondWith('GET', '/data?fromDate', [200, { "Content-Type": "application/json" }, fixtureData]);
-const xhr = sinon.useFakeXMLHttpRequest();
-
 const fs = require('fs');
 const path = require('path');
 const jsdom = require('jsdom-global');
