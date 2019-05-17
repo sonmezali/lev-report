@@ -11,7 +11,8 @@
     "test:ui": "eslint assets/js && mocha test/ui",
     "watch:server": "nodemon -w src -w test/server -x 'npm run test:server'",
     "watch:ui": "nodemon -w src -w test -x 'npm run test:server'",
-    "browserify": "browserify ./assets/js/app.js > ./public/js/bundle.js"
+    "browserify": "browserify ./assets/js/app.js > ./public/js/bundle.js",
+    "postinstall": "mkdir -p public/js public/css && cp -r assets/image public/image && npm run browserify"
   },
   "repository": {
     "type": "git",
