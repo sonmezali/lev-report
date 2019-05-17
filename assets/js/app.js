@@ -26,7 +26,7 @@ const stateChanged = (dateDescription, xhttp) => () => {
     }
     unblockForm();
   } else {
-    console.log('Update:', xhttp.status, xhttp.statusText);
+    console.log(`Update (${xhttp.readyState}):`, xhttp.status, xhttp.statusText);
   }
 };
 const handleSubmit = event => {
@@ -65,7 +65,9 @@ const handleSubmit = event => {
     unblockForm();
   };
   blockForm();
-  xhttp.open('GET', `${url}fromDate=${from.format(SERVER_FORMAT)}`, true);
+  url = `${url}fromDate=${from.format(SERVER_FORMAT)}`;
+  console.log('Get data:', url);
+  xhttp.open('GET', url, true);
   xhttp.send();
 };
 
