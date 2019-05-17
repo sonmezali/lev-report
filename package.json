@@ -1,0 +1,52 @@
+{
+  "name": "lev-report",
+  "version": "0.0.0",
+  "description": "Reports showing usage of LEV.",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node ./src/server.js",
+    "dev": "nodemon -w ./assets/js -w ./test/ui -x 'npm run test:ui' & nodemon -w ./src -w ./public -w /pages ./src/server.js",
+    "test": "npm run test:ui && npm run test:server",
+    "test:server": "eslint src && mocha test/server",
+    "test:ui": "eslint assets/js && mocha test/ui",
+    "watch:server": "nodemon -w src -w test/server -x 'npm run test:server'",
+    "watch:ui": "nodemon -w src -w test -x 'npm run test:server'",
+    "browserify": "browserify ./assets/js/app.js > ./public/js/bundle.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/UKHomeOffice/lev-report.git"
+  },
+  "author": "",
+  "license": "GPL-3.0-or-later",
+  "bugs": {
+    "url": "https://github.com/UKHomeOffice/lev-report/issues"
+  },
+  "homepage": "https://github.com/UKHomeOffice/lev-report#readme",
+  "dependencies": {
+    "bluebird": "^3.5.4",
+    "lev-restify": "UKHomeOffice/lev-restify",
+    "moment": "^2.24.0",
+    "pg-monitor": "^1.1.0",
+    "pg-promise": "^8.6.4",
+    "plotly.js-dist": "^1.47.0"
+  },
+  "devDependencies": {
+    "browserify": "^16.2.3",
+    "chai": "^4.2.0",
+    "chai-as-promised": "^7.1.1",
+    "eslint": "^5.16.0",
+    "eslint-plugin-filenames": "^1.3.2",
+    "eslint-plugin-mocha": "^5.3.0",
+    "eslint-plugin-one-variable-per-var": "0.0.3",
+    "jsdom": "^15.0.0",
+    "jsdom-global": "^3.0.2",
+    "mocha": "^6.1.4",
+    "mock-require": "^3.0.3",
+    "nodemon": "^1.19.0",
+    "proxyquire": "^2.1.0",
+    "rewire": "^4.0.1",
+    "sinon": "^7.3.2",
+    "sinon-chai": "^3.3.0"
+  }
+}
