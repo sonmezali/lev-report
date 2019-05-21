@@ -12,8 +12,8 @@ module.exports = {
     ssl: process.env.DB_SSL || false
   },
   http: {
-    host: process.env.HTTP_HOST || 'localhost',
-    port: process.env.HTTP_PORT || 4000
+    host: process.env.LISTEN_HOST || '0.0.0.0',
+    port: process.env.LISTEN_PORT || 4000
   }
 };
 /* eslint-enable no-process-env */
