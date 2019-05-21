@@ -1,69 +1,47 @@
+matrix:
+  NAME:
+    - ukhomeofficedigital/lev-report
+  MAJOR:
+    - 0
+  MINOR:
+    - 1
+  PATCH:
+    - 0
+  DOCKER_USERNAME:
+    - ukhomeofficedigital+lev_report
+  DOCKER_REPO:
+    - quay.io
 pipeline:
-
-  build:
+  test_pr:
     image: quay.io/ukhomeofficedigital/lev-ci
     environment:
       - DOCKER_HOST=tcp://172.17.0.1:2375
-      - DOCKER_IMAGE=lev-report
+    commands:
+      - make test
+    when:
+      event: pull_request
+  test_push:
+    image: quay.io/ukhomeofficedigital/lev-ci
+    environment:
+      - DOCKER_HOST=tcp://172.17.0.1:2375
     commands:
       - set -o pipefail
-      - docker build -t "$${DOCKER_IMAGE}" .
-      - docker build -t "$${DOCKER_IMAGE}-test" --target "$${DOCKER_IMAGE}-test" .
-      - docker run "$${DOCKER_IMAGE}-test"
+      - make test | tee 'test.log'
     when:
-      branch: master
-      event: [pull_request, push]
-
-  push_image:
-    image: quay.io/ukhomeofficedigital/lev-ci
-    secrets:
-      - DOCKER_PASSWORD
-    environment:
-      - DOCKER_HOST=tcp://172.17.0.1:2375
-      - DOCKER_REPO=quay.io
-      - DOCKER_BASEDIR=/ukhomeofficedigital/
-      - DOCKER_USERNAME=ukhomeofficedigital+lev_report
-      - DOCKER_IMAGE=lev-report
-    commands:
-      - PACKAGE_VERSION=$(grep version package.json | head -1 | awk -F ":" '{ print $2 }' | sed 's/[",]//g' | tr -d '[[:space:]]')
-      - TAG="v$${PACKAGE_VERSION}-$${DRONE_BUILD_NUMBER}-$${DRONE_COMMIT}"
-      - IMAGE="$${DOCKER_REPO}$${DOCKER_BASEDIR}$${DOCKER_IMAGE}"
-      - docker login -u="$${DOCKER_USERNAME}" -p="$${DOCKER_QUAY_PASSWORD}" "$${DOCKER_REPO}"
-      - docker tag "$${DOCKER_IMAGE}" "$${IMAGE}:$${TAG}"
-      - docker tag "$${DOCKER_IMAGE}" "$${IMAGE}:latest"
-      - docker push "$${IMAGE}:$${TAG}"
-      - docker push "$${IMAGE}:latest"
-    when:
-      branch: master
       event: push
-
-  notify_slack_success:
-    image: plugins/slack:1.0
-    secrets: [ slack_webhook ]
-    channel: general
-    username: Drone
-    template: >
-      *Deployed {{repo.name}} to Dev* - <{{build.link}}|#{{build.number}}>
-    when:
       branch: master
-      event: push
-      status: success
-
-  notify_slack_failure:
-    image: plugins/slack
-    secrets: [ slack_webhook ]
-    channel: alerts
-    username: Drone
-    template: >
-      *Failed to deploy {{repo.name}} to Dev*
-
-      Author: {{build.author}}
-
-      Duration: {{since job.started}}
-      Job: <{{build.link}}|#{{build.number}}>
-
-      Commit: {{build.commit}}
+  docker-build-and-push:
+    image: ukhomeoffice/drone-docker
+    secrets: [ docker_password ]
+    username: '${DOCKER_USERNAME}'
+    repo: '${DOCKER_REPO}/${NAME}'
+    registry: '${DOCKER_REPO}'
+    tags:
+      - '${MAJOR}.${MINOR}.${PATCH}-${DRONE_BUILD_NUMBER}-${DRONE_COMMIT:0:10}'
+      - '${MAJOR}.${MINOR}.${PATCH}'
+      - '${MAJOR}.${MINOR}'
+      - '${MAJOR}'
+      - 'latest'
     when:
-      branch: master
       event: push
-      status: failure
+      branch: master
