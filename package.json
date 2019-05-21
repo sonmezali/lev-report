@@ -12,7 +12,7 @@
     "watch:server": "nodemon -w src -w test/server -x 'npm run test:server'",
     "watch:ui": "nodemon -w src -w test -x 'npm run test:server'",
     "browserify": "browserify ./assets/js/app.js > ./public/js/bundle.js",
-    "postinstall": "if [ \"${NODE_ENV}\" != \"production\" ] ; then mkdir -p public/js public/css && cp -r assets/image public/ && npm run browserify ; fi"
+    "postinstall": "if [ \"${NODE_ENV}\" != \"production\" ] ; then mkdir -p public/js public/css && npm run browserify ; fi"
   },
   "repository": {
     "type": "git",
