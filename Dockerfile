@@ -1,47 +1,41 @@
-FROM node:10-alpine AS lev-report
+FROM node:10-alpine
 
-RUN apk add --no-cache ca-certificates git make python \
+RUN apk add --no-cache \
+      ca-certificates \
+      g++ \
+      make \
+      python \
  && apk upgrade --no-cache \
  && addgroup -S app \
- && adduser -S app -G app -u 31338 -h /app/ \
+ && adduser -S app -G app -u 31337 -h /app/ \
  && chown -R app:app /app/
 
+USER app
 WORKDIR /app
-COPY LICENSE package.json package-lock.json README.md /app/
-COPY pages /app/pages
-COPY src /app/src
+ENV NODE_ENV production
 
-USER 31338
-ENV NODE_ENV="production"
+COPY *node_modules/ package.json package-lock.json /app/
+RUN npm install --only production > .npm-install.log 2>&1 \
+ && rm .npm-install.log \
+ || ( EC=$?; cat .npm-install.log; exit $EC )
 
-RUN npm install --only production
+COPY pages/ /app/pages/
+COPY src/ /app/src/
 
-ENV HTTP_HOST="0.0.0.0" \
-    HTTP_PORT="4000" \
-    DB_HOST="localhost" \
-    DB_PORT="5432" \
-    DB_DB="lev"
-ENTRYPOINT node .
+RUN npm run postinstall
 
-
-FROM lev-report AS lev-report-test
-
-COPY .eslintignore .eslintrc.yaml /app/
-COPY assets /app/assets
-COPY test /app/test
-
-ENV NODE_ENV="test"
-
-RUN npm install
-
-ENTRYPOINT npm test
-
-
-FROM lev-report
+COPY public/ /app/public/
 
 USER root
-RUN apk del --no-cache git make python
+RUN apk del --no-cache \
+      g++ \
+      make \
+      python
 
-USER 31338
-WORKDIR /app
-COPY --from=lev-report-test /app/public /app/public
+USER 31337
+ENV LISTEN_HOST="0.0.0.0" \
+    LISTEN_PORT="4000" \
+    POSTGRES_HOST="localhost" \
+    POSTGRES_PORT="5432" \
+    POSTGRES_DB="lev"
+CMD ["node", "."]
