@@ -1,0 +1,47 @@
+matrix:
+  NAME:
+    - ukhomeofficedigital/lev-report
+  MAJOR:
+    - 0
+  MINOR:
+    - 1
+  PATCH:
+    - 0
+  DOCKER_USERNAME:
+    - ukhomeofficedigital+lev_report
+  DOCKER_REPO:
+    - quay.io
+pipeline:
+  test_pr:
+    image: quay.io/ukhomeofficedigital/lev-ci
+    environment:
+      - DOCKER_HOST=tcp://172.17.0.1:2375
+    commands:
+      - make test
+    when:
+      event: pull_request
+  test_push:
+    image: quay.io/ukhomeofficedigital/lev-ci
+    environment:
+      - DOCKER_HOST=tcp://172.17.0.1:2375
+    commands:
+      - set -o pipefail
+      - make test | tee 'test.log'
+    when:
+      event: push
+      branch: master
+  docker-build-and-push:
+    image: ukhomeoffice/drone-docker
+    secrets: [ docker_password ]
+    username: '${DOCKER_USERNAME}'
+    repo: '${DOCKER_REPO}/${NAME}'
+    registry: '${DOCKER_REPO}'
+    tags:
+      - '${MAJOR}.${MINOR}.${PATCH}-${DRONE_BUILD_NUMBER}-${DRONE_COMMIT:0:10}'
+      - '${MAJOR}.${MINOR}.${PATCH}'
+      - '${MAJOR}.${MINOR}'
+      - '${MAJOR}'
+      - 'latest'
+    when:
+      event: push
+      branch: master
