@@ -26,6 +26,7 @@
   "homepage": "https://github.com/UKHomeOffice/lev-report#readme",
   "dependencies": {
     "bluebird": "^3.5.4",
+    "browserify": "^16.2.3",
     "lev-restify": "^0.2.1",
     "moment": "^2.24.0",
     "pg-monitor": "^1.1.0",
@@ -33,7 +34,6 @@
     "plotly.js-dist": "^1.47.0"
   },
   "devDependencies": {
-    "browserify": "^16.2.3",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
     "eslint": "^5.16.0",
