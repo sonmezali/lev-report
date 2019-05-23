@@ -24,8 +24,6 @@ COPY src/ /app/src/
 
 RUN npm run postinstall
 
-COPY public/ /app/public/
-
 USER root
 RUN apk del --no-cache \
       g++ \
