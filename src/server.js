@@ -24,3 +24,19 @@ server.get('/', (req, res) => {
 server.listen(config.http.port, config.http.host, () => {
   global.logger.info('%s listening at %s', server.name, server.url);
 });
+
+
+// gracefully handle shutdowns -----------------------
+
+const closeGracefully = (signal) => {
+  setTimeout(() => {
+    global.logger.warn('Forcefully shutting down from sig:', signal);
+    process.exit(0); // eslint-disable-line no-process-exit
+  }, 500);
+
+  server.close(() => process.exit(0)); // eslint-disable-line no-process-exit
+};
+
+['SIGINT', 'SIGTERM', 'SIGQUIT'].forEach(signal =>
+  process.on(signal, () => closeGracefully(signal))
+);
