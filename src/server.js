@@ -1,7 +1,6 @@
 'use strict';
 
 global.Promise = require('bluebird');
-const path = require('path');
 const config = require('./config');
 
 const restify = require('lev-restify');
@@ -10,12 +9,8 @@ server.errors = restify.errors;
 global.logger = server.log;
 require('./lib/routes')(server);
 
-server.get('/public/*', restify.plugins.serveStatic({ directory: path.resolve('./') }));
-
-server.get('/*', restify.plugins.serveStatic({
-  directory: './pages',
-  default: 'index.html'
-}));
+server.get('/public/*', restify.plugins.serveStaticFiles('./public'));
+server.get('/*', restify.plugins.serveStaticFiles('./pages'));
 
 server.listen(config.http.port, config.http.host, () => {
   global.logger.info('%s listening at %s', server.name, server.url);
