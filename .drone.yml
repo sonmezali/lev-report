@@ -1,16 +1,11 @@
 matrix:
   NAME:
     - ukhomeofficedigital/lev-report
-  MAJOR:
-    - 0
-  MINOR:
-    - 1
-  PATCH:
-    - 1
   DOCKER_USERNAME:
     - ukhomeofficedigital+lev_report
   DOCKER_REPO:
     - quay.io
+
 pipeline:
   test_pr:
     image: quay.io/ukhomeofficedigital/lev-ci
@@ -27,21 +22,17 @@ pipeline:
     commands:
       - set -o pipefail
       - make test | tee 'test.log'
+      - set-tags
     when:
       event: push
       branch: master
+
   docker-build-and-push:
     image: ukhomeoffice/drone-docker
     secrets: [ docker_password ]
     username: '${DOCKER_USERNAME}'
     repo: '${DOCKER_REPO}/${NAME}'
     registry: '${DOCKER_REPO}'
-    tags:
-      - '${MAJOR}.${MINOR}.${PATCH}-${DRONE_BUILD_NUMBER}-${DRONE_COMMIT:0:10}'
-      - '${MAJOR}.${MINOR}.${PATCH}'
-      - '${MAJOR}.${MINOR}'
-      - '${MAJOR}'
-      - 'latest'
     when:
       event: push
       branch: master
