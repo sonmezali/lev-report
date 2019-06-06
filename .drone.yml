@@ -50,8 +50,7 @@ pipeline:
       - DOCKER_BASEDIR=/ukhomeofficedigital/
       - DOCKER_IMAGE=lev-report
     commands:
-      - PACKAGE_VERSION=`cat .tags | awk -F "," '{ print $2 }'`
-      - TAG="v$${PACKAGE_VERSION}-$${DRONE_BUILD_NUMBER}-$${DRONE_COMMIT}"
+      - TAG="v$${VERSION}-$${DRONE_BUILD_NUMBER}-$${DRONE_COMMIT}"
       - IMAGE="$${DOCKER_REPO}$${DOCKER_BASEDIR}$${DOCKER_IMAGE}"
       - kubectl="kubectl --insecure-skip-tls-verify --server=$${KUBE_SERVER} --namespace=$${KUBE_NAMESPACE} --token=$${KUBE_TOKEN}"
       - $${kubectl} scale deployment $${KUBE_DEPLOYMENT} --replicas 2
