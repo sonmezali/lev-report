@@ -3,7 +3,7 @@
 const db = require('./postgres');
 
 const baseQuery = 'SELECT date_time::date as date, dataset, count(*) from lev_audit WHERE date_time > $1';
-const grouping = ' group by date_time::date, dataset';
+const grouping = ' group by date_time::date, dataset order by date_time::date';
 
 module.exports = {
   usageSinceDate: (from) => db.manyOrNone(`${baseQuery} ${grouping}`, from)

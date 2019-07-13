@@ -7,10 +7,13 @@ const restify = require('lev-restify');
 const server = restify.createServer(config.name);
 server.errors = restify.errors;
 global.logger = server.log;
-require('./lib/routes')(server);
 
+server.get('/favicon.ico', (req, res, next) => next('No favicon'));
 server.get('/public/*', restify.plugins.serveStaticFiles('./public'));
-server.get('/*', restify.plugins.serveStaticFiles('./pages'));
+
+const reactRenderer = require('lev-react-renderer');
+server.use(reactRenderer);
+require('./lib/routes')(server);
 
 server.listen(config.http.port, config.http.host, () => {
   global.logger.info('%s listening at %s', server.name, server.url);

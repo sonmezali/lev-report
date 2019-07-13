@@ -1,7 +1,6 @@
 'use strict';
 
 const moment = require('moment');
-const Plotly = require('plotly.js-dist');
 
 const HUMAN_FORMAT = 'D/M/YYYY';
 const SERVER_FORMAT = 'YYYY-MM-DD HH:mm:ss:SSS';
@@ -15,12 +14,13 @@ const stateChanged = (dateDescription, xhttp) => () => {
   if (xhttp.readyState === 4) {
     if (xhttp.status === 200) {
       const data = JSON.parse(xhttp.responseText);
-      const layout = {
-        title: `LEV usage ${dateDescription}`,
-        barmode: 'stack'
-      };
+      // const layout = {
+      //   title: `LEV usage ${dateDescription}`,
+      //   barmode: 'stack'
+      // };
 
-      Plotly.newPlot('graph', data, layout);
+      // here!
+      console.log(data);
     } else {
       console.log('HTTP ERROR:', xhttp.status, xhttp.statusText);
     }
