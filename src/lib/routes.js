@@ -2,7 +2,6 @@
 
 const dateFormat = 'YYYY-MM-DD HH:mm:ss';
 const moment = require('moment');
-const query = require('./db/query');
 const model = require('./model');
 const report = require('lev-react-components').LevReport;
 
@@ -17,11 +16,9 @@ module.exports = server => {
 
     if (fromDate && fromDate.isValid()) {
       if (!toDate || toDate.isValid()) {
-        return (toDate ?
-          query.usageDuringDateRange(fromDate.format(dateFormat), toDate.format(dateFormat)) :
-          query.usageSinceDate(fromDate.format(dateFormat)))
-          .then(data => model(fromDate, toDate || moment(), data))
-          .then(JSON.stringify)
+        const from = fromDate.format(dateFormat);
+        const to = toDate && toDate.format(dateFormat);
+        return model(from, to)
           .then(res.end.bind(res))
           .catch(err => {
             server.log.error(err);
@@ -31,7 +28,7 @@ module.exports = server => {
 
       next(new server.errors.BadRequestError(`Make sure the date format is '${dateFormat}' (time is optional)`));
     } else {
-      next(new server.errors.BadRequestError('Must provide a \'fromDate\' parameter, and optionally a \'toDate\''));
+      next(new server.errors.BadRequestError('Must provide a \'from\' date parameter, and optionally a \'to\' date'));
     }
   });
 
@@ -40,10 +37,7 @@ module.exports = server => {
     fromDate = (fromDate.isValid() && fromDate || moment()).format(dateFormat);
     const toDate = req.query && req.query.to && moment(req.query.to, dateFormat);
 
-    (toDate ?
-        query.usageDuringDateRange(fromDate, toDate.format(dateFormat)) :
-        query.usageSinceDate(fromDate))
-      .then(data => model(fromDate, toDate || moment(), data))
+    model(fromDate, toDate)
       .then(function render(props) {
         res.render(report, props);
         console.log(props)})
