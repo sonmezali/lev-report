@@ -44,6 +44,6 @@ module.exports = server => {
       .catch(err => {
         server.log.error(err);
         res.render(report);
-      })
+      });
   });
 };

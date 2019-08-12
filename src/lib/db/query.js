@@ -2,8 +2,8 @@
 
 const db = require('./postgres');
 
-const groups = 'SELECT DISTINCT groups FROM lev_audit';
-const countsByDateType = 'SELECT date_time::DATE AS date, dataset, count(*)::INTEGER FROM lev_audit WHERE date_time > $1';
+const countsByDateType =
+  'SELECT date_time::DATE AS date, dataset, count(*)::INTEGER FROM lev_audit WHERE date_time > $1';
 const countsByType = 'SELECT dataset, count(*)::INTEGER FROM lev_audit WHERE date_time > $1';
 const countsByUser =
   'SELECT date_time::DATE AS date, dataset, username, count(*)::INTEGER FROM lev_audit WHERE date_time > $1';
@@ -38,7 +38,7 @@ module.exports = {
       throw new Error('Could not fetch data');
     }),
 
-  usageByType: (from , to) => db.manyOrNone(
+  usageByType: (from, to) => db.manyOrNone(
     `${countsByType} ${to ? until : ''} ${groupByType}`,
     to ? [from, to] : from)
     .catch(e => {

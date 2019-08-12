@@ -1,32 +1,63 @@
 'use strict';
 
 const moment = require('moment');
+const query = require('./db/query');
 
 const objPush = (obj, key, value) => void (obj[key] = value) || obj; // eslint-disable-line no-void
 
-const DATE_FORMAT = 'YYYY-MM-DD';
-const dayGenerator = function* dayGenerator(from, to, format) { // eslint-disable-line generator-star-spacing
+const dayGenerator = function* dayGenerator(from, to) { // eslint-disable-line generator-star-spacing
   while (from.isBefore(to)) {
     yield from.valueOf();
     from.add(1, 'days');
   }
 };
-const datesInRange = (from, to, format = DATE_FORMAT) => [...dayGenerator(moment(from), to, format)];
+const datesInRange = (from, to) => [...dayGenerator(moment(from), to)];
 
+const DATE_FORMAT = 'YYYY-MM-DD';
 const insertData = (model, data) => data.forEach(
   d => model[d.dataset] && (model[d.dataset].push({
     date: moment(d.date, DATE_FORMAT).valueOf(),
-    usage: parseInt(d.count, 10)
+    usage: d.count
   }))
 );
 
-module.exports = (dateFrom, dateTo, data) => {
-  const datatypes = ['birth', 'death', 'marriage', 'partnership'];
-
+const datatypes = ['birth', 'death', 'marriage', 'partnership'];
+const dailyUsage = (dateFrom, dateTo) => {
   const model = datatypes.reduce((m, dt) => objPush(m, dt, []), {
-    dates: datesInRange(dateFrom, dateTo)
+    dates: datesInRange(dateFrom, dateTo || moment().endOf('day'))
   });
-  insertData(model, data);
 
-  return model;
+  return query.usageByDateType(dateFrom, dateTo).then(data => {
+    insertData(usage, data);
+    return Object.entries(usage).reduce((u, e) => [...u, { name: e[0], dailyUsage: e[1] }], []);
+  });
 };
+
+const datasetUsage = (dateFrom, dateTo) => query.usageByType(dateFrom, dateTo).then(totals =>
+  totals && totals.length && totals.reduce((o, ds) => ({
+    ...o,
+    [ds.dataset]: ds.count,
+    total: o.total + ds.count
+  }), { total: 0 }));
+
+const group = (g, parent) => datatypes.reduce((o, d) => ({ ...o, [d]: d === g.dataset ? g.count : 0 }), {
+  id: g.name.replace(/^\/Team |^\/\w+ - |[^\w]/g, ''),
+  name: g.name,
+  total: g.count,
+  parent: parent && (parent.hasChildren = true) ? parent.id : null
+});
+const findParent = (data, groups) => groups.find(g => data.name.search(new RegExp(`\\b${g.id}\\b`)) > -1);
+const processGroups = data => data.reduce(
+  (groups, d, i, a, len = groups.length, last = len && groups[len - 1]) =>
+    len && d.name === last.name
+      ? objPush(groups, len - 1, { ...last, [d.dataset]: d.count, total: last.total + d.count })
+      : [...groups, group(d, len && findParent(d, groups))]
+  , []);
+const groupUsage = (dateFrom, dateTo) => query.usageByGroup(dateFrom, dateTo).then(processGroups);
+
+const build = (dateFrom, dateTo) => Promise.join(
+  datasetUsage(dateFrom, dateTo), groupUsage(dateFrom, dateTo),
+  (totals, groups) => ({ datasets: datatypes, groups, totals })
+);
+
+module.exports = build;
