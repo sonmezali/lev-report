@@ -23,9 +23,7 @@ const insertData = (model, data) => data.forEach(
 
 const datatypes = ['birth', 'death', 'marriage', 'partnership'];
 const dailyUsage = (dateFrom, dateTo) => {
-  const model = datatypes.reduce((m, dt) => objPush(m, dt, []), {
-    dates: datesInRange(dateFrom, dateTo || moment().endOf('day'))
-  });
+  const usage = datatypes.reduce((u, dt) => objPush(u, dt, []), { });
 
   return query.usageByDateType(dateFrom, dateTo).then(data => {
     insertData(usage, data);
@@ -56,8 +54,17 @@ const processGroups = data => data.reduce(
 const groupUsage = (dateFrom, dateTo) => query.usageByGroup(dateFrom, dateTo).then(processGroups);
 
 const build = (dateFrom, dateTo) => Promise.join(
-  datasetUsage(dateFrom, dateTo), groupUsage(dateFrom, dateTo),
-  (totals, groups) => ({ datasets: datatypes, groups, totals })
+  dailyUsage(dateFrom, dateTo),
+  datasetUsage(dateFrom, dateTo),
+  groupUsage(dateFrom, dateTo),
+  (daily, totals, groups) => ({
+    from: dateFrom,
+    to: dateTo,
+    dates: datesInRange(dateFrom, dateTo || moment().endOf('day')),
+    datasets: daily,
+    groups,
+    totals
+  })
 );
 
 module.exports = build;
