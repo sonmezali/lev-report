@@ -7,6 +7,9 @@ plugins:
   - one-variable-per-var
   - mocha
 
+parserOptions:
+  ecmaVersion: 9
+
 rules:
 
   # ## Possible Errors
