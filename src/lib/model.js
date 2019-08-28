@@ -1,53 +1,70 @@
 'use strict';
 
 const moment = require('moment');
+const query = require('./db/query');
 
 const objPush = (obj, key, value) => void (obj[key] = value) || obj; // eslint-disable-line no-void
 
-const DATE_FORMAT = 'YYYY-MM-DD';
-const dayGenerator = function* dayGenerator(from, to, format) { // eslint-disable-line generator-star-spacing
-  yield from.format(format);
+const dayGenerator = function* dayGenerator(from, to) { // eslint-disable-line generator-star-spacing
   while (from.isBefore(to)) {
+    yield from.valueOf();
     from.add(1, 'days');
-    yield from.format(format);
   }
 };
-const datesInRange = (from, to, format = DATE_FORMAT) => [...dayGenerator(moment(from), to, format)];
+const datesInRange = (from, to) => [...dayGenerator(moment(from), to)];
 
-const inity = (dateFrom, dateTo) => () => datesInRange(dateFrom, dateTo).reduce((y, d) => objPush(y, d, 0), {});
+const DATE_FORMAT = 'YYYY-MM-DD';
+const insertData = (model, data) => data.forEach(
+  d => model[d.dataset] && (model[d.dataset].push({
+    date: moment(d.date, DATE_FORMAT).valueOf(),
+    usage: d.count
+  }))
+);
 
-const initModel = (datatypes, dates, init) => datatypes.reduce((m, t) => objPush(m, t, {
-    name: t,
-    x: dates,
-    y: init(),
-    type: 'bar',
-    textposition: 'auto',
-    hoverinfo: t,
-    opacity: 0.5,
-    marker: {
-      color: 'rgb(158,202,225)',
-      line: {
-        color: 'rgb(8,48,107)',
-        width: 1.5
-      }
-    }
-  }), {});
+const datatypes = ['birth', 'death', 'marriage', 'partnership'];
+const dailyUsage = (dateFrom, dateTo) => {
+  const usage = datatypes.reduce((u, dt) => objPush(u, dt, []), { });
 
-const insertData = (model, data) => data.forEach(d => model[d.dataset] && (model[d.dataset].y[d.date] = d.count));
-
-/* eslint-disable no-return-assign */
-const unobjectifyy = model => Object.values(model).forEach(trace => trace.y = Object.values(trace.y));
-
-const addTraceText = model => Object.values(model).forEach(trace => trace.text = trace.y.map(String));
-/* eslint-enable no-return-assign */
-
-module.exports = (dateFrom, dateTo, data) => {
-  const datatypes = ['birth', 'death', 'marriage', 'partnership'];
-
-  const model = initModel(datatypes, datesInRange(dateFrom, dateTo, 'D MMM'), inity(dateFrom, dateTo));
-  insertData(model, data);
-  unobjectifyy(model);
-  addTraceText(model);
-
-  return Object.values(model);
+  return query.usageByDateType(dateFrom, dateTo).then(data => {
+    insertData(usage, data);
+    return Object.entries(usage).reduce((u, e) => [...u, { name: e[0], dailyUsage: e[1] }], []);
+  });
 };
+
+const datasetUsage = (dateFrom, dateTo) => query.usageByType(dateFrom, dateTo).then(totals =>
+  totals && totals.length && totals.reduce((o, ds) => ({
+    ...o,
+    [ds.dataset]: ds.count,
+    total: o.total + ds.count
+  }), { total: 0 }));
+
+const group = (g, parent) => datatypes.reduce((o, d) => ({ ...o, [d]: d === g.dataset ? g.count : 0 }), {
+  id: g.name.replace(/^\/Team |^\/\w+ - |[^\w]/g, ''),
+  name: g.name,
+  total: g.count,
+  parent: parent && (parent.hasChildren = true) ? parent.id : null
+});
+const findParent = (data, groups) => groups.find(g => data.name.search(new RegExp(`\\b${g.id}\\b`)) > -1);
+const processGroups = data => data.reduce(
+  (groups, d, i, a, len = groups.length, last = len && groups[len - 1]) =>
+    len && d.name === last.name
+      ? objPush(groups, len - 1, { ...last, [d.dataset]: d.count, total: last.total + d.count })
+      : [...groups, group(d, len && findParent(d, groups))]
+  , []);
+const groupUsage = (dateFrom, dateTo) => query.usageByGroup(dateFrom, dateTo).then(processGroups);
+
+const build = (dateFrom, dateTo) => Promise.join(
+  dailyUsage(dateFrom, dateTo),
+  datasetUsage(dateFrom, dateTo),
+  groupUsage(dateFrom, dateTo),
+  (daily, totals, groups) => ({
+    from: dateFrom,
+    to: dateTo,
+    dates: datesInRange(dateFrom, dateTo || moment().endOf('day')),
+    datasets: daily,
+    groups,
+    totals
+  })
+);
+
+module.exports = build;

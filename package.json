@@ -1,11 +1,11 @@
 {
   "name": "lev-report",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Reports showing usage of LEV.",
   "main": "src/server.js",
   "scripts": {
     "start": "node ./src/server.js",
-    "dev": "nodemon -w ./assets/js -w ./test/ui -x 'npm run test:ui' & nodemon -w ./src -w ./public -w /pages ./src/server.js",
+    "dev": "nodemon -w ./assets/js -w ./test/ui -x 'npm run test:ui' & nodemon -w ./src -w ./public -w ./node_modules/lev-react-components/dist/index.js ./src/server.js",
     "test": "npm run test:ui && npm run test:server",
     "test:server": "eslint src && mocha test/server",
     "test:ui": "eslint assets/js && mocha test/ui",
@@ -27,11 +27,16 @@
   "dependencies": {
     "bluebird": "^3.5.4",
     "browserify": "^16.2.3",
+    "lev-react-components": "^0.4.0",
+    "lev-react-renderer": "^0.1.0",
     "lev-restify": "^1.0.0",
     "moment": "^2.24.0",
     "pg-monitor": "^1.1.0",
     "pg-promise": "^8.6.4",
-    "plotly.js-dist": "^1.47.0"
+    "react": "^16.8.6",
+    "react-dom": "^16.8.6",
+    "react-router-dom": "^5.0.1",
+    "styled-components": "^4.3.2"
   },
   "devDependencies": {
     "chai": "^4.2.0",
