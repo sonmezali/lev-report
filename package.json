@@ -1,6 +1,6 @@
 {
   "name": "lev-report",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Reports showing usage of LEV.",
   "main": "src/server.js",
   "scripts": {
