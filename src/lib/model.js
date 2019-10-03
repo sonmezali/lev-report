@@ -1,7 +1,8 @@
 'use strict';
 
 const moment = require('moment');
-const query = require('./db/query');
+const config = require('../config');
+const query = config.postgres.mock ? require('../../mock/mock-query') : require('./db/query');
 
 const objPush = (obj, key, value) => void (obj[key] = value) || obj; // eslint-disable-line no-void
 

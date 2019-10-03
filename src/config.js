@@ -4,6 +4,7 @@
 module.exports = {
   name: require('../package').name,
   postgres: {
+    mock: process.env.MOCK,
     user: process.env.POSTGRES_USER || 'postgres',
     password: process.env.POSTGRES_PASSWORD || 'postgres',
     host: process.env.POSTGRES_HOST || 'localhost',
