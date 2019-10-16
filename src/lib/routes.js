@@ -19,6 +19,7 @@ module.exports = server => {
         const from = fromDate.format(dateFormat);
         const to = toDate && toDate.format(dateFormat);
         return model(from, to)
+          .then(data => JSON.stringify(data, null, 2))
           .then(res.end.bind(res))
           .catch(err => {
             server.log.error(err);

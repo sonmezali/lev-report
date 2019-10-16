@@ -1,0 +1,21 @@
+module.exports = [
+  { name: '/Team Delivery', dataset: 'birth', count: 7 },
+  { name: '/Team DWP', dataset: 'birth', count: 48295 },
+  { name: '/Team HMPO', dataset: 'birth', count: 2713 },
+  { name: '/Team HMRC', dataset: 'death', count: 342 },
+  { name: '/Team HMRC', dataset: 'birth', count: 121436 },
+  { name: '/HMPO/GRO', dataset: 'birth', count: 45 },
+  { name: '/HMRC/Compliance', dataset: 'birth', count: 5 },
+  { name: '/HMRC/Guardians Allowance', dataset: 'birth', count: 134 },
+  { name: '/HMRC/Guardians Allowance', dataset: 'death', count: 2 },
+  { name: '/HMRC/Priority 1', dataset: 'birth', count: 98 },
+  { name: '/HMRC/Priority 1', dataset: 'death', count: 340 },
+  { name: '/Monitoring/Pingdom', dataset: 'birth', count: 4667 },
+  { name: '/Monitoring/Pingdom', dataset: 'marriage', count: 4691 },
+  { name: '/Monitoring/Smoke tests', dataset: 'partnership', count: 26 },
+  { name: '/Monitoring/Smoke tests', dataset: 'marriage', count: 26 },
+  { name: '/Monitoring/Smoke tests', dataset: 'death', count: 26 },
+  { name: '/Monitoring/Smoke tests', dataset: 'birth', count: 26 },
+  { name: 'No group', dataset: 'birth', count: 10101 },
+  { name: '/Realm Administrators', dataset: 'birth', count: 7 }
+];
