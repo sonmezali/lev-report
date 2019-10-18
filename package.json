@@ -5,7 +5,7 @@
   "main": "src/server.js",
   "scripts": {
     "start": "node ./src/server.js",
-    "dev": "nodemon -w ./assets/js -w ./test/ui -x 'npm run test:ui' & nodemon -w ./src -w ./public -w ./node_modules/lev-react-components/dist/index.js ./src/server.js",
+    "dev": "nodemon -w ./assets/js -w ./test/ui -x 'npm run test:ui' & MOCK=true nodemon -w ./src -w ./public -w ./node_modules/lev-react-components/dist/index.js ./src/server.js",
     "test": "npm run test:ui && npm run test:server",
     "test:server": "eslint src && mocha test/server",
     "test:ui": "eslint assets/js && mocha test/ui",
@@ -39,6 +39,8 @@
     "styled-components": "^4.3.2"
   },
   "devDependencies": {
+    "@babel/plugin-transform-runtime": "^7.6.2",
+    "bunyan": "^1.8.12",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
     "eslint": "^5.16.0",
