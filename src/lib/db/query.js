@@ -12,8 +12,8 @@ const groupByDateType = ' GROUP BY date_time::date, dataset ORDER BY date_time::
 const groupByType = ' GROUP BY dataset';
 const groupByDateTypeUser = ' GROUP BY date_time::date, dataset, username ORDER BY date_time::date';
 const groupByTypeGroup = 'GROUP BY name, dataset';
-const totalCount = 'SELECT count(*) FROM lev_audit';
-const dailyCount = 'SELECT count(*) FROM lev_audit WHERE date_time::DATE = current_date';
+const totalCount = 'SELECT count(*)::INTEGER FROM lev_audit';
+const forToday = ' WHERE date_time::DATE = current_date';
 
 const buildCountsByGroup = (from, to, includeNoGroup = true) => `
 SELECT name, dataset, SUM(count)::INTEGER AS count
