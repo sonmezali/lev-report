@@ -50,11 +50,12 @@ module.exports = server => {
   });
 
   server.get('/*', (req, res) => {
-    let fromDate = req.query && req.query.from && moment(req.query.from, dateFormat) || moment().startOf('month');
-    fromDate = (fromDate.isValid() ? fromDate : moment()).format(dateFormat);
+    const fromDate = req.query && req.query.from && moment(req.query.from, dateFormat);
     const toDate = req.query && req.query.to && moment(req.query.to, dateFormat);
 
-    model(fromDate, toDate)
+    model(
+      fromDate.isValid() ? fromDate.format(dateFormat) : moment().startOf('month'),
+      toDate.isValid() && toDate.format(dateFormat))
       .then(props => res.render(LevReport, props))
       .catch(err => {
         server.log.error(err);
