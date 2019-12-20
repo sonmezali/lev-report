@@ -58,13 +58,17 @@ const build = (dateFrom, dateTo) => Promise.join(
   dailyUsage(dateFrom, dateTo),
   datasetUsage(dateFrom, dateTo),
   groupUsage(dateFrom, dateTo),
-  (daily, totals, groups) => ({
+  query.searchTotals(true),
+  query.searchTotals(false),
+  (daily, totals, groups, allTime, todaySearches) => ({
     from: dateFrom,
     to: dateTo,
     dates: datesInRange(dateFrom, dateTo || moment().endOf('day')),
     datasets: daily,
     groups,
-    totals
+    totals,
+    allTime,
+    todaySearches
   })
 );
 

@@ -12,17 +12,19 @@ const groupByDateType = ' GROUP BY date_time::date, dataset ORDER BY date_time::
 const groupByType = ' GROUP BY dataset';
 const groupByDateTypeUser = ' GROUP BY date_time::date, dataset, username ORDER BY date_time::date';
 const groupByTypeGroup = 'GROUP BY name, dataset';
+const totalCount = 'SELECT count(*)::INTEGER FROM lev_audit';
+const forToday = ' WHERE date_time::DATE = current_date';
 
 const buildCountsByGroup = (from, to, includeNoGroup = true) => `
 SELECT name, dataset, SUM(count)::INTEGER AS count
 FROM (
-  SELECT UNNEST(groups) AS name, dataset, COUNT(*) 
-    FROM lev_audit 
-    WHERE date_time > $1 ${to ? until : ''} 
+  SELECT UNNEST(groups) AS name, dataset, COUNT(*)
+    FROM lev_audit
+    WHERE date_time > $1 ${to ? until : ''}
     ${groupByTypeGroup} ${includeNoGroup ? `
   UNION
-  SELECT 'No group' AS name, dataset, COUNT(*) 
-    FROM lev_audit 
+  SELECT 'No group' AS name, dataset, COUNT(*)
+    FROM lev_audit
     WHERE groups='{}' AND date_time > $1 ${to ? until : ''}` : ''}
     ${groupByTypeGroup}
 ) AS counts
@@ -58,5 +60,11 @@ module.exports = {
     .catch(e => {
       global.logger.error(`Problem retrieving counts for users between: ${from} and ${to || 'now'}`, e);
       throw new Error('Could not fetch data');
+    }),
+
+    searchTotals: (isAllTimeCount) => db.manyOrNone(`${isAllTimeCount ? totalCount : totalCount + forToday}`)
+        .catch(e => {
+            global.logger.error(`Problem retrieving ${isAllTimeCount ? 'an all time count' : 'a count for today'}`, e);
+        throw new Error('Could not fetch data');
     })
 };

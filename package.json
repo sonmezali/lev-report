@@ -1,14 +1,14 @@
 {
   "name": "lev-report",
-  "version": "0.3.2",
+  "version": "0.4.0",
   "description": "Reports showing usage of LEV.",
   "main": "src/server.js",
   "scripts": {
     "start": "node ./src/server.js",
-    "dev": "nodemon -w ./assets/js -w ./test/ui -x 'npm run test:ui' & nodemon -w ./src -w ./public -w ./node_modules/lev-react-components/dist/index.js ./src/server.js",
+    "dev": "nodemon -w ./assets/js -x 'npm run test:ui && npm run browserify' & MOCK=true nodemon -w ./src -w ./public -w ./node_modules/lev-react-components/dist/index.js ./src/server.js",
     "test": "npm run test:ui && npm run test:server",
     "test:server": "eslint src && mocha test/server",
-    "test:ui": "eslint assets/js && mocha test/ui",
+    "test:ui": "eslint assets/js",
     "watch:server": "nodemon -w src -w test/server -x 'npm run test:server'",
     "watch:ui": "nodemon -w src -w test -x 'npm run test:server'",
     "browserify": "if [ -e ./assets/js/app.js ]; then browserify ./assets/js/app.js > ./public/js/bundle.js; fi",
@@ -25,6 +25,7 @@
   },
   "homepage": "https://github.com/UKHomeOffice/lev-report#readme",
   "dependencies": {
+    "@babel/runtime": "^7.6.3",
     "bluebird": "^3.5.4",
     "browserify": "^16.2.3",
     "lev-react-components": "^0.4.2",
@@ -39,6 +40,8 @@
     "styled-components": "^4.3.2"
   },
   "devDependencies": {
+    "@babel/plugin-transform-runtime": "^7.6.2",
+    "bunyan": "^1.8.12",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
     "eslint": "^5.16.0",
