@@ -40,8 +40,8 @@ module.exports = server => {
     const toDate = req.query && req.query.to && moment(req.query.to, dateFormat);
 
     return promiseResponder(model(
-      fromDate.isValid() ? fromDate.format(dateFormat) : moment().startOf('month'),
-      toDate.isValid() && toDate.format(dateFormat)
+      fromDate && fromDate.isValid() ? fromDate.format(dateFormat) : moment().startOf('month'),
+      toDate && toDate.isValid() && toDate.format(dateFormat)
     ), req, res, next, LevReport);
   });
 };
