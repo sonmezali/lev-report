@@ -63,6 +63,7 @@ module.exports = {
     }),
 
     searchTotals: (isAllTimeCount) => db.manyOrNone(`${isAllTimeCount ? totalCount : totalCount + forToday}`)
+        .then(data => data[0].count)
         .catch(e => {
             global.logger.error(`Problem retrieving ${isAllTimeCount ? 'an all time count' : 'a count for today'}`, e);
         throw new Error('Could not fetch data');
