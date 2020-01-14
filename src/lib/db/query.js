@@ -62,7 +62,8 @@ module.exports = {
       throw new Error('Could not fetch data');
     }),
 
-    searchTotals: (isAllTimeCount) => db.manyOrNone(`${isAllTimeCount ? totalCount : totalCount + forToday}`)
+    searchTotals: (isAllTimeCount) =>
+        db.one(`${isAllTimeCount ? totalCount : totalCount + forToday}`, [], data => data.count)
         .catch(e => {
             global.logger.error(`Problem retrieving ${isAllTimeCount ? 'an all time count' : 'a count for today'}`, e);
         throw new Error('Could not fetch data');
