@@ -14,9 +14,9 @@ describe('lib/db/query', () => {
 		let stub;
 		before(() => {
 			stub = sinon.stub();
-			stub.returns(Promise.resolve([{ count: 5 }]));
+			stub.returns(Promise.resolve());
 			fakeQuery = proxyquire('../../../../src/lib/db/query', {
-				'./postgres': { manyOrNone: stub }
+				'./postgres': { one: stub }
 			});
 		});
 		describe('when `true` is provided', () => {
@@ -27,7 +27,7 @@ describe('lib/db/query', () => {
 			);
 			it('should pass SQL to the database library', () =>
 					expect(stub).to.have.been.calledOnce
-							.and.to.have.been.calledWithExactly(totalCountSQL)
+							.and.to.have.been.calledWith(totalCountSQL)
 			);
 		});
 		describe('when `false` is provided', () => {
@@ -41,7 +41,7 @@ describe('lib/db/query', () => {
 			);
 			it('should pass SQL to the database library with the "today" where clause', () =>
 					expect(stub).to.have.been.calledOnce
-							.and.to.have.been.calledWithExactly(totalCountSQL + forTodaySQL)
+							.and.to.have.been.calledWith(totalCountSQL + forTodaySQL)
 			);
 		});
 	});
