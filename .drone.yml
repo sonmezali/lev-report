@@ -60,3 +60,31 @@ pipeline:
     when:
       branch: master
       event: push
+
+  notify_slack_success:
+    image: plugins/slack:1.0
+    secrets: [ slack_webhook ]
+    channel: general
+    username: Drone
+    template: >
+      *Deployed {{repo.name}} to Dev* - <{{build.link}}|#{{build.number}}>
+    when:
+      branch: master
+      event: push
+      status: success
+
+    notify_slack_failure:
+      image: plugins/slack
+      secrets: [ slack_webhook ]
+      channel: alerts
+      username: Drone
+      template: >
+        *Failed to deploy {{repo.name}} to Dev*
+        Author: {{build.author}}
+        Duration: {{since job.started}}
+        Job: <{{build.link}}|#{{build.number}}>
+        Commit: {{build.commit}}
+      when:
+        branch: master
+        event: push
+        status: failure
