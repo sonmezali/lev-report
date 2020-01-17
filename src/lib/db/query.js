@@ -31,10 +31,12 @@ FROM (
 ${groupByTypeGroup}
 ORDER BY name~'^/Team' desc, name`;
 
+const filterObject = (obj) => Object.fromEntries(Object.entries(obj).filter(e => e[1]));
+
 module.exports = {
   usageByDateType: (from, to) => db.manyOrNone(
     `${countsByDateType} ${to ? until : ''} ${groupByDateType}`,
-    to ? [from, to] : from)
+    filterObject({ from: from, to: to }))
     .catch(e => {
       global.logger.error(`Problem retrieving counts for datatypes by day between: ${from} and ${to || 'now'}`, e);
       throw new Error('Could not fetch data');
@@ -42,13 +44,14 @@ module.exports = {
 
   usageByType: (from, to) => db.manyOrNone(
     `${countsByType} ${to ? until : ''} ${groupByType}`,
-    to ? [from, to] : from)
+    filterObject({ from: from, to: to }))
     .catch(e => {
       global.logger.error(`Problem retrieving counts for datatypes between: ${from} and ${to || 'now'}`, e);
       throw new Error('Could not fetch data');
     }),
 
-  usageByGroup: (from, to) => db.manyOrNone(buildCountsByGroup(from, to), to ? [from, to] : from)
+  usageByGroup: (from, to) => db.manyOrNone(buildCountsByGroup(from, to),
+    filterObject({ from: from, to: to }))
     .catch(e => {
       global.logger.error(`Problem retrieving counts for groups between: ${from} and ${to || 'now'}`, e);
       throw new Error('Could not fetch data');
@@ -56,7 +59,7 @@ module.exports = {
 
   usageByUser: (from, to) => db.manyOrNone(
     `${countsByUser} ${to ? until : ''} ${groupByDateTypeUser}`,
-    to ? [from, to] : from)
+    filterObject({ from: from, to: to }))
     .catch(e => {
       global.logger.error(`Problem retrieving counts for users between: ${from} and ${to || 'now'}`, e);
       throw new Error('Could not fetch data');
