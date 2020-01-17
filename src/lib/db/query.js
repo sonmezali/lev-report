@@ -33,6 +33,14 @@ ORDER BY name~'^/Team' desc, name`;
 
 const filterObject = (obj) => Object.fromEntries(Object.entries(obj).filter(e => e[1]));
 
+// eslint-disable-next-line no-unused-vars
+const sqlBuilder = (obj) => {
+  obj = filterObject(obj);
+    return Object.entries(obj).map(([key, value]) =>
+      `${key} ${Array.isArray(value) ? value.filter(e => e).join(' AND ') : value}`
+    ).join(' ');
+};
+
 module.exports = {
   usageByDateType: (from, to) => db.manyOrNone(
     `${countsByDateType} ${to ? until : ''} ${groupByDateType}`,
