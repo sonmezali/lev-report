@@ -35,13 +35,17 @@ module.exports = server => {
 
   server.get('/dashboard/data', (req, res, next) => promiseResponder(dashboardModel(), req, res, next));
 
+  // eslint-disable-next-line complexity
   server.get('/*', (req, res, next) => {
     const fromDate = req.query && req.query.from && moment(req.query.from, dateFormat);
     const toDate = req.query && req.query.to && moment(req.query.to, dateFormat);
+    const searchGroup = req.query && req.query.currentGroup;
 
     return promiseResponder(model(
       (fromDate && fromDate.isValid() ? fromDate : moment().startOf('month')).format(dateFormat),
-      toDate && toDate.isValid() && toDate.format(dateFormat)
+      toDate && toDate.isValid() && toDate.format(dateFormat),
+      searchGroup === 'No group' ? '{}' : searchGroup,
+      searchGroup
     ), req, res, next, LevReport);
   });
 };

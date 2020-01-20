@@ -176,7 +176,8 @@ describe('lib/db/query', () => {
 			it('should build an sql statement when `to, from and group` are provided', () =>
 				expect(stub).to.have.been.calledOnce
 					.and.to.have.been.calledWith('SELECT count(*)::INTEGER FROM lev_audit ' +
-					'WHERE date_time::DATE > $(from) AND date_time::DATE < $(to) AND groups::TEXT ILIKE $(group)')
+					'WHERE date_time::DATE > $(from) AND date_time::DATE < $(to) ' +
+					'AND groups::TEXT ILIKE \'%\' || $(group) || \'%\'')
 			);
 		});
 		describe('when function is called with empty dates', () => {
@@ -190,7 +191,8 @@ describe('lib/db/query', () => {
 			);
 			it('should build an sql statement when to and from dates are not provided', () =>
 				expect(stub).to.have.been.calledOnce
-					.and.to.have.been.calledWith('SELECT count(*)::INTEGER FROM lev_audit WHERE groups::TEXT ILIKE $(group)')
+					.and.to.have.been.calledWith('SELECT count(*)::INTEGER FROM lev_audit ' +
+					'WHERE groups::TEXT ILIKE \'%\' || $(group) || \'%\'')
 			);
 		});
 	});
