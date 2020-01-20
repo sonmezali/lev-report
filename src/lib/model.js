@@ -54,17 +54,20 @@ const processGroups = data => data.reduce(
   , []);
 const groupUsage = (dateFrom, dateTo) => query.usageByGroup(dateFrom, dateTo).then(processGroups);
 
-const build = (dateFrom, dateTo) => Promise.join(
+const build = (dateFrom, dateTo, searchGroup, groupSearchText) => Promise.join(
   dailyUsage(dateFrom, dateTo),
   datasetUsage(dateFrom, dateTo),
   groupUsage(dateFrom, dateTo),
-  (daily, totals, groups) => ({
+  query.searchTimePeriodByGroup(dateFrom, dateTo, searchGroup),
+  (daily, totals, groups, total) => ({
     from: dateFrom,
     to: dateTo,
     dates: datesInRange(dateFrom, dateTo || moment().endOf('day')),
     datasets: daily,
     groups,
-    totals
+    totals,
+    currentGroup: groupSearchText,
+    total
   })
 );
 
