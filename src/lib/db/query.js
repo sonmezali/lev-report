@@ -2,13 +2,10 @@
 
 const db = require('./postgres');
 
-const countsByDateType =
-  'SELECT date_time::DATE AS date, dataset, count(*)::INTEGER FROM lev_audit WHERE date_time > $(from)';
 const countsByType = 'SELECT dataset, count(*)::INTEGER FROM lev_audit WHERE date_time > $(from)';
 const countsByUser =
   'SELECT date_time::DATE AS date, dataset, username, count(*)::INTEGER FROM lev_audit WHERE date_time > $(from)';
 const until = 'AND date_time < $(to)';
-const groupByDateType = ' GROUP BY date_time::date, dataset ORDER BY date_time::date';
 const groupByType = ' GROUP BY dataset';
 const groupByDateTypeUser = ' GROUP BY date_time::date, dataset, username ORDER BY date_time::date';
 const groupByTypeGroup = 'GROUP BY name, dataset';
@@ -44,11 +41,17 @@ const sqlBuilder = (obj) => {
 };
 
 module.exports = {
-  usageByDateType: (from, to) => db.manyOrNone(
-    `${countsByDateType} ${to ? until : ''} ${groupByDateType}`,
-    filterObject({ from: from, to: to }))
+  usageByDateType: (from, to, group) => db.manyOrNone(
+    sqlBuilder({
+      'SELECT': 'date_time::DATE AS date, dataset, count(*)::INTEGER',
+      'FROM': 'lev_audit',
+      'WHERE': [from && fromDate, to && toDate, group && searchGroup],
+      'GROUP BY': 'date_time::date, dataset ORDER BY date_time::date'
+    }),
+    filterObject({ from: from, to: to, group: group }))
     .catch(e => {
-      global.logger.error(`Problem retrieving counts for datatypes by day between: ${from} and ${to || 'now'}`, e);
+      global.logger.error(`Problem retrieving counts for datatypes by day between: 
+      ${from} and ${to || 'now'} 'for' ${group || 'all groups'}`, e);
       throw new Error('Could not fetch data');
     }),
 
