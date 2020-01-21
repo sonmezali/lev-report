@@ -23,10 +23,10 @@ const insertData = (model, data) => data.forEach(
 );
 
 const datatypes = ['birth', 'death', 'marriage', 'partnership'];
-const dailyUsage = (dateFrom, dateTo) => {
+const dailyUsage = (dateFrom, dateTo, searchGroup) => {
   const usage = datatypes.reduce((u, dt) => objPush(u, dt, []), { });
 
-  return query.usageByDateType(dateFrom, dateTo).then(data => {
+  return query.usageByDateType(dateFrom, dateTo, searchGroup).then(data => {
     insertData(usage, data);
     return Object.entries(usage).reduce((u, e) => [...u, { name: e[0], dailyUsage: e[1] }], []);
   });
@@ -55,7 +55,7 @@ const processGroups = data => data.reduce(
 const groupUsage = (dateFrom, dateTo) => query.usageByGroup(dateFrom, dateTo).then(processGroups);
 
 const build = (dateFrom, dateTo, searchGroup, groupSearchText) => Promise.join(
-  dailyUsage(dateFrom, dateTo),
+  dailyUsage(dateFrom, dateTo, searchGroup),
   datasetUsage(dateFrom, dateTo),
   groupUsage(dateFrom, dateTo),
   query.searchTimePeriodByGroup(dateFrom, dateTo, searchGroup),
