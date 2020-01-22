@@ -13,6 +13,8 @@ const promiseResponder = (promise, req, res, next, component) => promise
     return next(err);
   });
 
+const dateChecker = d => !!d && moment(d, dateFormat);
+
 module.exports = server => {
   server.get('/readiness', (req, res) => res.send('OK'));
 
@@ -35,10 +37,9 @@ module.exports = server => {
 
   server.get('/dashboard/data', (req, res, next) => promiseResponder(dashboardModel(), req, res, next));
 
-  // eslint-disable-next-line complexity
   server.get('/*', (req, res, next) => {
-    const fromDate = req.query && req.query.from && moment(req.query.from, dateFormat);
-    const toDate = req.query && req.query.to && moment(req.query.to, dateFormat);
+    const fromDate = dateChecker(req.query && req.query.from);
+    const toDate = dateChecker(req.query && req.query.to);
     const searchGroup = req.query && req.query.currentGroup;
 
     return promiseResponder(model(
