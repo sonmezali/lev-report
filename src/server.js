@@ -8,7 +8,12 @@ const server = restify.createServer(config.name);
 server.errors = restify.errors;
 global.logger = server.log;
 
-server.get('/favicon.ico', (req, res, next) => next('No favicon'));
+server.get('/favicon.ico', (req, res, next) => res.redirect({
+  pathname: '/public/images/crown-favicon.ico',
+  query: {},
+  permanent: true,
+  overrideQuery: true
+}, next));
 server.get('/public/*', restify.plugins.serveStaticFiles('./public'));
 
 const reactRenderer = require('lev-react-renderer');
