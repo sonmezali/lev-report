@@ -73,18 +73,21 @@ pipeline:
       event: push
       status: success
 
-    notify_slack_failure:
-      image: plugins/slack
-      secrets: [ slack_webhook ]
-      channel: alerts
-      username: Drone
-      template: >
-        *Failed to deploy {{repo.name}} to Dev*
-        Author: {{build.author}}
-        Duration: {{since job.started}}
-        Job: <{{build.link}}|#{{build.number}}>
-        Commit: {{build.commit}}
-      when:
-        branch: master
-        event: push
-        status: failure
+  notify_slack_failure:
+    image: plugins/slack
+    secrets: [ slack_webhook ]
+    channel: alerts
+    username: Drone
+    template: >
+      *Failed to deploy {{repo.name}} to Dev*
+
+      Author: {{build.author}}
+
+      Duration: {{since job.started}}
+      Job: <{{build.link}}|#{{build.number}}>
+
+      Commit: {{build.commit}}
+    when:
+      branch: master
+      event: push
+      status: failure
