@@ -11,8 +11,9 @@
     "test:ui": "eslint assets/js",
     "watch:server": "nodemon -w src -w test/server -x 'npm run test:server'",
     "watch:ui": "nodemon -w src -w test -x 'npm run test:server'",
+    "copy:images": "if [ -e ./assets/images ]; then cp -r ./assets/images ./public/; fi",
     "browserify": "if [ -e ./assets/js/app.js ]; then browserify ./assets/js/app.js > ./public/js/bundle.js; fi",
-    "postinstall": "mkdir -p public/js public/css && cp -r assets/images public/ && npm run browserify"
+    "postinstall": "mkdir -p public/js public/css && npm run copy:images && npm run browserify"
   },
   "repository": {
     "type": "git",
