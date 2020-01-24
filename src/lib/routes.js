@@ -13,20 +13,18 @@ const promiseResponder = (promise, req, res, next, component) => promise
     return next(err);
   });
 
-const dateChecker = d => !!d && moment(d, dateFormat);
+const dateChecker = d => !!d && moment(d, dateFormat).isValid() && d;
 
 module.exports = server => {
   server.get('/readiness', (req, res) => res.send('OK'));
 
   server.get('/data', (req, res, next) => { // eslint-disable-line consistent-return
-    const fromDate = req.query && moment(req.query.from, dateFormat);
-    const toDate = req.query && req.query.to && moment(req.query.to, dateFormat);
+    const fromDate = dateChecker(req.query.from);
+    const toDate = dateChecker(req.query && req.query.to);
 
-    if (fromDate && fromDate.isValid()) {
-      if (!toDate || toDate.isValid()) {
-        const from = fromDate.format(dateFormat);
-        const to = toDate && toDate.format(dateFormat);
-        return promiseResponder(model(from, to), req, res, next);
+    if (dateChecker(fromDate)) {
+      if (dateChecker(toDate)) {
+        return promiseResponder(model(fromDate, toDate), req, res, next);
       }
       return next(new server.errors.BadRequestError(`Make sure the date format is "${dateFormat}" (time is optional)`));
     }
@@ -43,8 +41,8 @@ module.exports = server => {
     const searchGroup = req.query && req.query.currentGroup;
 
     return promiseResponder(model(
-      (fromDate && fromDate.isValid() ? fromDate : moment().startOf('month')).format(dateFormat),
-      toDate && toDate.isValid() && toDate.format(dateFormat),
+      (fromDate ? fromDate : moment().startOf('month')),
+      toDate,
       searchGroup === 'No group' ? '{}' : searchGroup,
       searchGroup
     ), req, res, next, LevReport);
