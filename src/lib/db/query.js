@@ -11,7 +11,7 @@ const groupByDateTypeUser = ' GROUP BY date_time::date, dataset, username ORDER 
 const groupByTypeGroup = 'GROUP BY name, dataset';
 const totalCount = 'SELECT count(*)::INTEGER FROM lev_audit';
 const forToday = ' WHERE date_time::DATE = current_date';
-const fromDate = 'date_time::DATE > $(from)';
+const fromDate = 'date_time::DATE >= $(from)';
 const toDate = 'date_time::DATE < $(to)';
 const searchGroup = 'groups::TEXT ILIKE \'%\' || $(group) || \'%\'';
 
