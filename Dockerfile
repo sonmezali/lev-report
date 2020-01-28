@@ -19,9 +19,9 @@ RUN npm install --only production > .npm-install.log 2>&1 \
  && rm .npm-install.log \
  || ( EC=$?; cat .npm-install.log; exit $EC )
 
-COPY assets/ /app/assets/
-COPY pages/ /app/pages/
-COPY src/ /app/src/
+COPY --chown=app assets/ /app/assets/
+COPY --chown=app pages/ /app/pages/
+COPY --chown=app src/ /app/src/
 
 RUN npm run postinstall
 
