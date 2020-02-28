@@ -36,5 +36,7 @@ ENV LISTEN_HOST="0.0.0.0" \
     LISTEN_PORT="4000" \
     POSTGRES_HOST="localhost" \
     POSTGRES_PORT="5432" \
-    POSTGRES_DB="lev"
+    POSTGRES_DB="lev" \
+    POSTGRES_USER="lev" \
+    POSTGRES_PASSWORD="lev"
 CMD ["node", "."]

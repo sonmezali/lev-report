@@ -1,0 +1,26 @@
+version: "3.4"
+services:
+  report:
+    build:
+      context: .
+    environment:
+      - LISTEN_HOST=0.0.0.0
+      - LISTEN_PORT=4000
+      - POSTGRES_USER=lev
+      - POSTGRES_PASSWORD=lev
+      - POSTGRES_HOST=postgres
+      - POSTGRES_ADMIN_USER=root
+      - POSTGRES_ADMIN_PASSWORD=root
+    ports:
+      - "4000:4000"
+  postgres:
+    build:
+      context: example-db/
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
+      - POSTGRES_DB=lev
+      - APP_USER=lev
+      - APP_PASSWORD=lev
+    ports:
+      - "5432:5432"
