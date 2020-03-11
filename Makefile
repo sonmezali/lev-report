@@ -1,5 +1,14 @@
 DOCKER_IMAGE ?= lev-report
 DOCKER_DB_IMAGE ?= lev-report-mock-db
+postgres_hostname=localhost
+postgres_port=5432
+postgres_username=lev
+postgres_password=lev
+postgres_database=lev
+
+psql_args=-h $(postgres_hostname) -p $(postgres_port) -d $(postgres_database) -U $(postgres_username)
+psql=PGPASSWORD=$(postgres_password) psql $(psql_args)
+pg_dump=PGPASSWORD=$(postgres_password) pg_dump $(psql_args)
 
 mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
 current_dir := $(notdir $(patsubst %/,%,$(dir $(mkfile_path))))
@@ -8,7 +17,7 @@ compose_project_name = $(current_dir)
 compose_network_regexp != echo "$$(echo '$(compose_project_name)' | sed -E 's/([-_])+/[-_]*/g')_default"
 probe_network = docker network ls | grep -o '$(compose_network_regexp)'
 
-.PHONY: all clean deps docker docker-clean docker-test node-deps test unit-test
+.PHONY: all clean deps docker docker-clean docker-test node-deps test unit-test db-shell
 
 all: deps test docker
 
@@ -39,6 +48,9 @@ docker-compose-deps:
 
 docker-compose: docker-compose-deps docker docker-compose.yml
 	docker-compose build
+
+db-shell:
+	$(psql)
 
 docker:
 	docker build -t '$(DOCKER_IMAGE)' .
