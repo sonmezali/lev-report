@@ -97,5 +97,16 @@ module.exports = {
     .catch(e => {
       global.logger.error(`Problem retrieving a search from "${from}" to "${to}" for group "${group}"`, e);
       throw new Error('Could not fetch data');
+    }),
+
+  totalCustomerSearches: () => db.one(sqlBuilder({
+    'SELECT': 'count(*)',
+    'FROM': 'lev_audit',
+    'WHERE': ['groups <> \'{}\'', 'groups::TEXT NOT LIKE \'%/Monitoring%\'',
+      'groups::TEXT NOT LIKE \'%/LEV%\'', 'groups::TEXT NOT LIKE \'%/Team Delivery%\'']
+  }), {}, data => data.count)
+    .catch(e => {
+      global.logger.error('Problem retrieving count for total customer searches', e);
+      throw new Error('Could not fetch data');
     })
 };
