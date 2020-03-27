@@ -102,8 +102,9 @@ module.exports = {
   totalCustomerSearches: () => db.one(sqlBuilder({
     'SELECT': 'count(*)',
     'FROM': 'lev_audit',
-    'WHERE': ['groups <> \'{}\'', 'groups::TEXT NOT LIKE \'%/Monitoring%\'',
-      'groups::TEXT NOT LIKE \'%/LEV%\'', 'groups::TEXT NOT LIKE \'%/Team Delivery%\'']
+    'WHERE': ['groups <> \'{}\'::TEXT[]',
+      'NOT (groups && \'{/Monitoring,/Monitoring/Pingdom,"/Monitoring/Smoke tests",' +
+      '/LEV,/LEV/Delivery,/LEV/DSST,"/Team Delivery"}\')']
   }), {}, data => data.count)
     .catch(e => {
       global.logger.error('Problem retrieving count for total customer searches', e);
