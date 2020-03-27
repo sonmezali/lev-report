@@ -214,10 +214,9 @@ describe('lib/db/query', () => {
 		it('should build an SQL statement', () =>
 			expect(stub).to.have.been.calledOnce
 				.and.to.have.been.calledWith('SELECT count(*) FROM lev_audit ' +
-				'WHERE groups <> \'{}\' ' +
-				'AND groups::TEXT NOT LIKE \'%/Monitoring%\' ' +
-				'AND groups::TEXT NOT LIKE \'%/LEV%\' ' +
-				'AND groups::TEXT NOT LIKE \'%/Team Delivery%\'')
+				'WHERE groups <> \'{}\'::TEXT[] ' +
+				'AND NOT (groups && \'{/Monitoring,/Monitoring/Pingdom,"/Monitoring/Smoke tests",' +
+				'/LEV,/LEV/Delivery,/LEV/DSST,"/Team Delivery"}\')')
 		);
 	});
 });
