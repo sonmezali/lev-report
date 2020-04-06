@@ -196,27 +196,4 @@ describe('lib/db/query', () => {
 			);
 		});
 	});
-	describe('totalCustomerSearches function', () => {
-		let fakeQuery;
-		let stub;
-		before(() => {
-			stub = sinon.stub();
-			stub.returns(Promise.resolve());
-			fakeQuery = proxyquire('../../../../src/lib/db/query', {
-				'./postgres': { one: stub }
-			});
-		});
-		it('should return a promise', () =>
-			expect(fakeQuery.totalCustomerSearches())
-				.to.be.an.instanceOf(Promise)
-				.that.is.fulfilled
-		);
-		it('should build an SQL statement', () =>
-			expect(stub).to.have.been.calledOnce
-				.and.to.have.been.calledWith('SELECT count(*) FROM lev_audit ' +
-				'WHERE groups <> \'{}\'::TEXT[] ' +
-				'AND NOT (groups && \'{/Monitoring,/Monitoring/Pingdom,"/Monitoring/Smoke tests",' +
-				'/LEV,/LEV/Delivery,/LEV/DSST,"/Team Delivery"}\')')
-		);
-	});
 });

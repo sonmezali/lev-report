@@ -9,6 +9,5 @@ module.exports = {
   usageByDateType: () => Promise.resolve(daily),
   usageByType: () => Promise.resolve(totals),
   usageByGroup: () => Promise.resolve(groups),
-  searchTotals: (isAllTimeCount) => Promise.resolve(isAllTimeCount ? allTime : dailySearches),
-  totalCustomerSearches: () => Promise.resolve(allTimeCustomerSearches)
+  searchTotals: (isAllTimeCount) => Promise.resolve(isAllTimeCount ? allTime : dailySearches)
 };
