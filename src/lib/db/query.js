@@ -2,6 +2,7 @@
 
 const db = require('./postgres');
 
+const timeZone = 'AT TIME ZONE \'europe/london\'';
 const countsByType = 'SELECT dataset, count(*)::INTEGER FROM lev_audit WHERE date_time > $(from)';
 const countsByUser =
   'SELECT date_time::DATE AS date, dataset, username, count(*)::INTEGER FROM lev_audit WHERE date_time > $(from)';
@@ -10,9 +11,9 @@ const groupByType = ' GROUP BY dataset';
 const groupByDateTypeUser = ' GROUP BY date_time::date, dataset, username ORDER BY date_time::date';
 const groupByTypeGroup = 'GROUP BY name, dataset';
 const totalCount = 'SELECT count(*)::INTEGER FROM lev_audit';
-const forToday = ' WHERE date_time::DATE = current_date';
-const fromDate = 'date_time::DATE >= $(from)';
-const toDate = 'date_time::DATE < $(to)';
+const forToday = ` WHERE (CURRENT_TIMESTAMP ${timeZone})::DATE = (date_time ${timeZone})::DATE;`;
+const fromDate = `(date_time ${timeZone})::DATE >= $(from)`;
+const toDate = `(date_time ${timeZone})::DATE < $(to)`;
 const searchGroup = 'groups::TEXT ILIKE \'%\' || $(group) || \'%\'';
 
 const buildCountsByGroup = (from, to, includeNoGroup = true) => `
