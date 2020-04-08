@@ -6,12 +6,10 @@ const timeZone = 'AT TIME ZONE \'europe/london\'';
 const DTZ = `(date_time ${timeZone})::DATE`;
 const countsByType = `SELECT dataset, count(*)::INTEGER FROM lev_audit WHERE ${DTZ} > $(from)`;
 const countsByUser =
-  `SELECT ${DTZ} AS date, dataset, username, count(*)::INTEGER 
-  FROM lev_audit WHERE ${DTZ} > $(from)`;
+  `SELECT ${DTZ} AS date, dataset, username, count(*)::INTEGER FROM lev_audit WHERE ${DTZ} > $(from)`;
 const until = `AND ${DTZ} < $(to)`;
 const groupByType = ' GROUP BY dataset';
-const groupByDateTypeUser =
-  ` GROUP BY ${DTZ}, dataset, username ORDER BY ${DTZ}`;
+const groupByDateTypeUser = ' GROUP BY 1, 2, 3 ORDER BY 1';
 const groupByTypeGroup = 'GROUP BY name, dataset';
 const totalCount = 'SELECT count(*)::INTEGER FROM lev_audit';
 const forToday = ` WHERE (CURRENT_TIMESTAMP ${timeZone})::DATE = ${DTZ};`;
@@ -50,7 +48,8 @@ module.exports = {
       'SELECT': `${DTZ} AS date, dataset, count(*)::INTEGER`,
       'FROM': 'lev_audit',
       'WHERE': [from && fromDate, to && toDate, group && searchGroup],
-      'GROUP BY': `${DTZ}, dataset ORDER BY ${DTZ}`
+      'GROUP BY': '1, 2',
+      'ORDER BY': '1'
     }),
     filterObject({ from: from, to: to, group: group }))
     .catch(e => {
