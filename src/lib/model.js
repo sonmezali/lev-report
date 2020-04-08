@@ -55,12 +55,39 @@ const processGroups = data => data.reduce(
   , []);
 const groupUsage = (dateFrom, dateTo) => query.usageByGroup(dateFrom, dateTo).then(processGroups);
 
+const hours = name => ({ name, data: Array.from({ length: 24 }, (_, n) => ({ count: 0, hour: n })) });
+const dayCounts = (from, to) => (
+  (start, end,
+   diff = Math.abs(Math.round(moment.duration(start.startOf('day').diff(end.endOf('day'))).as('days'))),
+   mod = diff % 7,
+   weeks = Math.floor(diff / 7),
+   startDay = start.day() || 7,
+   extraWeekEndDays = mod && [6, 7].filter(n => startDay <= n && (startDay + mod) > n).length,
+   we = (weeks * 2) + extraWeekEndDays
+  ) => [diff - we, we]
+)(moment(from, DATE_FORMAT), moment(to, DATE_FORMAT));
+const processHourlyUsage = (nod, data) => {
+  const total = nod[0] + nod[1];
+  const traces = [nod[0] && hours('weekday'), nod[1] && hours('weekend')];
+  const average = hours('average').data;
+  data.forEach(d => {
+    traces[d.weekend].data[d.hour].count = (d.count / nod[d.weekend]);
+    average[d.hour].count += d.count;
+  });
+  return [...traces, nod[0] && nod[1] && {
+    name: 'average', data: average.map(o => ({ ...o, count: o.count / total }))
+  }].filter(e => e);
+};
+const hourlyUsage = (dateFrom, dateTo, searchGroup) => query.hourlyUsage(dateFrom, dateTo, searchGroup)
+  .then(processHourlyUsage.bind(null, dayCounts(dateFrom, dateTo || moment().endOf('day'))));
+
 const build = (dateFrom, dateTo, searchGroup, groupSearchText) => Promise.join(
   dailyUsage(dateFrom, dateTo, searchGroup),
   datasetUsage(dateFrom, dateTo),
   groupUsage(dateFrom, dateTo),
   query.searchTimePeriodByGroup(dateFrom, dateTo, searchGroup),
-  (daily, totals, groups, total) => ({
+  hourlyUsage(dateFrom, dateTo, searchGroup),
+  (daily, totals, groups, total, hourly) => ({
     from: dateFrom,
     to: dateTo,
     dates: datesInRange(dateFrom, dateTo || moment().endOf('day')),
@@ -68,8 +95,10 @@ const build = (dateFrom, dateTo, searchGroup, groupSearchText) => Promise.join(
     groups,
     totals,
     currentGroup: groupSearchText,
-    total
+    total,
+    hourlyUsage: hourly
   })
 );
 
 module.exports = build;
+module.exports.hourlyUsage = hourlyUsage;
