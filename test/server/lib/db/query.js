@@ -176,7 +176,8 @@ describe('lib/db/query', () => {
 			it('should build an sql statement when `to, from and group` are provided', () =>
 				expect(stub).to.have.been.calledOnce
 					.and.to.have.been.calledWith('SELECT count(*)::INTEGER FROM lev_audit ' +
-					'WHERE date_time::DATE >= $(from) AND date_time::DATE < $(to) ' +
+					'WHERE (date_time AT TIME ZONE \'europe/london\')::DATE >= $(from) AND ' +
+					'(date_time AT TIME ZONE \'europe/london\')::DATE < $(to) ' +
 					'AND groups::TEXT ILIKE \'%\' || $(group) || \'%\'')
 			);
 		});
