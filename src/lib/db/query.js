@@ -3,17 +3,20 @@
 const db = require('./postgres');
 
 const timeZone = 'AT TIME ZONE \'europe/london\'';
-const countsByType = 'SELECT dataset, count(*)::INTEGER FROM lev_audit WHERE date_time > $(from)';
+const DTZ = `(date_time ${timeZone})::DATE`;
+const countsByType = `SELECT dataset, count(*)::INTEGER FROM lev_audit WHERE ${DTZ} > $(from)`;
 const countsByUser =
-  'SELECT date_time::DATE AS date, dataset, username, count(*)::INTEGER FROM lev_audit WHERE date_time > $(from)';
-const until = 'AND date_time < $(to)';
+  `SELECT ${DTZ} AS date, dataset, username, count(*)::INTEGER 
+  FROM lev_audit WHERE ${DTZ} > $(from)`;
+const until = `AND ${DTZ} < $(to)`;
 const groupByType = ' GROUP BY dataset';
-const groupByDateTypeUser = ' GROUP BY date_time::date, dataset, username ORDER BY date_time::date';
+const groupByDateTypeUser =
+  ` GROUP BY ${DTZ}, dataset, username ORDER BY ${DTZ}`;
 const groupByTypeGroup = 'GROUP BY name, dataset';
 const totalCount = 'SELECT count(*)::INTEGER FROM lev_audit';
-const forToday = ` WHERE (CURRENT_TIMESTAMP ${timeZone})::DATE = (date_time ${timeZone})::DATE;`;
-const fromDate = `(date_time ${timeZone})::DATE >= $(from)`;
-const toDate = `(date_time ${timeZone})::DATE < $(to)`;
+const forToday = ` WHERE (CURRENT_TIMESTAMP ${timeZone})::DATE = ${DTZ};`;
+const fromDate = `${DTZ} >= $(from)`;
+const toDate = `${DTZ} < $(to)`;
 const searchGroup = 'groups::TEXT ILIKE \'%\' || $(group) || \'%\'';
 
 const buildCountsByGroup = (from, to, includeNoGroup = true) => `
@@ -21,12 +24,12 @@ SELECT name, dataset, SUM(count)::INTEGER AS count
 FROM (
   SELECT UNNEST(groups) AS name, dataset, COUNT(*)
     FROM lev_audit
-    WHERE date_time > $(from) ${to ? until : ''}
+    WHERE ${DTZ} > $(from) ${to ? until : ''}
     ${groupByTypeGroup} ${includeNoGroup ? `
   UNION
   SELECT 'No group' AS name, dataset, COUNT(*)
     FROM lev_audit
-    WHERE groups='{}' AND date_time > $(from) ${to ? until : ''}` : ''}
+    WHERE groups='{}' AND ${DTZ} > $(from) ${to ? until : ''}` : ''}
     ${groupByTypeGroup}
 ) AS counts
 ${groupByTypeGroup}
@@ -44,10 +47,10 @@ const sqlBuilder = (obj) => {
 module.exports = {
   usageByDateType: (from, to, group) => db.manyOrNone(
     sqlBuilder({
-      'SELECT': 'date_time::DATE AS date, dataset, count(*)::INTEGER',
+      'SELECT': `${DTZ} AS date, dataset, count(*)::INTEGER`,
       'FROM': 'lev_audit',
       'WHERE': [from && fromDate, to && toDate, group && searchGroup],
-      'GROUP BY': 'date_time::date, dataset ORDER BY date_time::date'
+      'GROUP BY': `${DTZ}, dataset ORDER BY ${DTZ}`
     }),
     filterObject({ from: from, to: to, group: group }))
     .catch(e => {
