@@ -33,11 +33,11 @@ ORDER BY name~'^/Team' desc, name`;
 
 const filterObject = (obj) => Object.fromEntries(Object.entries(obj).filter(e => e[1]));
 
-const sqlBuilder = (obj) => {
+const sqlBuilder = (obj, joiner) => {
   obj = filterObject(obj);
     return Object.entries(obj).map(([key, value]) =>
       `${key} ${Array.isArray(value) ? value.filter(e => e).join(' AND ') : value}`
-    ).join(' ');
+    ).join(joiner || ' ');
 };
 
 module.exports = {
@@ -90,7 +90,7 @@ module.exports = {
         'SELECT': 'count(*)::INTEGER',
         'FROM': 'lev_audit',
         'WHERE': [from && fromDate, to && toDate, group && searchGroup]
-      }),
+      }, '\n'),
       filterObject({ from, to, group }),
       data => data.count
     )

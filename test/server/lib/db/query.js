@@ -108,6 +108,24 @@ describe('lib/db/query', () => {
 							.to.be.a('string')
 							.that.equals('SELECT first_name, surname, COUNT(*) FROM aTable GROUP BY first_name, surname')
 					);
+					it('should return the same query, using the specified "joiner" character', () =>
+						expect(fn({
+							'SELECT': 'first_name, surname, COUNT(*)',
+							'FROM': 'aTable',
+							'GROUP BY': 'first_name, surname'
+						}, '\n'))
+							.to.be.a('string')
+							.that.equals('SELECT first_name, surname, COUNT(*)\nFROM aTable\nGROUP BY first_name, surname')
+					);
+					it('should return the same query, using the specified "joiner" string', () =>
+						expect(fn({
+							'SELECT': 'first_name, surname, COUNT(*)',
+							'FROM': 'aTable',
+							'GROUP BY': 'first_name, surname'
+						}, '\n  '))
+							.to.be.a('string')
+							.that.equals('SELECT first_name, surname, COUNT(*)\n  FROM aTable\n  GROUP BY first_name, surname')
+					);
 				});
 			});
 		});
