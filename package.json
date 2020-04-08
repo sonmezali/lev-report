@@ -5,12 +5,12 @@
   "main": "src/server.js",
   "scripts": {
     "start": "node ./src/server.js",
-    "dev": "nodemon -w ./assets/js -x 'npm run test:ui && npm run browserify' & MOCK=true nodemon -w ./src -w ./public -w ./node_modules/lev-react-components/dist/index.js ./src/server.js",
+    "dev": "nodemon -w ./assets/js -x 'npm run test:ui && npm run browserify' & MOCK=${MOCK:-true} nodemon -w ./src -w ./public -w ./node_modules/lev-react-components/dist/index.js ./src/server.js",
     "test": "npm run test:ui && npm run test:server",
     "test:server": "eslint src && mocha test/server",
     "test:ui": "eslint assets/js",
     "watch:server": "nodemon -w src -w test/server -x 'npm run test:server'",
-    "watch:ui": "nodemon -w src -w test -x 'npm run test:server'",
+    "watch:ui": "nodemon -w src -w test -x 'npm run test:ui'",
     "copy:images": "cp -r ./assets/images ./public/",
     "browserify": "browserify ./assets/js/app.js > ./public/js/bundle.js",
     "postinstall": "if [ -e ./assets ]; then mkdir -p public/js public/css && npm run copy:images && npm run browserify ; fi"
