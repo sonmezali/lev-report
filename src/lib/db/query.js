@@ -2,12 +2,11 @@
 
 const db = require('./postgres');
 
-const until = 'AND date_time < $(to)';
 const groupByTypeGroup = 'GROUP BY name, dataset';
 const totalCount = 'SELECT count(*)::INTEGER FROM lev_audit';
 const forToday = ' WHERE date_time >= (current_date::date)::timestamp';
-const fromDate = 'date_time >= $(from)';
-const toDate = 'date_time < $(to)';
+const fromDate = 'date_time >= ($(from)::timestamp without time zone) at time zone \'Europe/London\'';
+const toDate = 'date_time < ($(to)::timestamp without time zone) at time zone \'Europe/London\'';
 const searchGroup = 'groups::TEXT ILIKE \'%\' || $(group) || \'%\'';
 
 const buildCountsByGroup = (from, to, includeNoGroup = true) => `
@@ -15,12 +14,12 @@ SELECT name, dataset, SUM(count)::INTEGER AS count
 FROM (
   SELECT UNNEST(groups) AS name, dataset, COUNT(*)
     FROM lev_audit
-    WHERE date_time > $(from) ${to ? until : ''}
+    WHERE ${fromDate}${to ? '\n      AND ' + toDate : ''}
     ${groupByTypeGroup} ${includeNoGroup ? `
   UNION
   SELECT 'No group' AS name, dataset, COUNT(*)
     FROM lev_audit
-    WHERE groups='{}' AND date_time > $(from) ${to ? until : ''}` : ''}
+    WHERE groups='{}' AND ${fromDate}${to ? '\n      AND ' + toDate : ''}` : ''}
     ${groupByTypeGroup}
 ) AS counts
 ${groupByTypeGroup}
