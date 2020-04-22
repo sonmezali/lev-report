@@ -4,6 +4,13 @@ const proxyquire = require('proxyquire');
 const fixtures = require('./query.fixtures');
 const rewire = require('rewire');
 const query = rewire('../../../../src/lib/db/query');
+const stubs = {
+	one: sinon.stub().resolves(),
+	manyOrNone: sinon.stub().resolves()
+};
+const fakeQuery = proxyquire('../../../../src/lib/db/query', {
+	'./postgres': stubs
+});
 
 describe('lib/db/query', () => {
 	describe('helper functions', () => {
@@ -134,14 +141,8 @@ describe('lib/db/query', () => {
 		const totalCountSQL = query.__get__('totalCount');
 		// eslint-disable-next-line no-underscore-dangle
 		const forTodaySQL = query.__get__('forToday');
-		let fakeQuery;
-		let stub;
 		before(() => {
-			stub = sinon.stub();
-			stub.returns(Promise.resolve());
-			fakeQuery = proxyquire('../../../../src/lib/db/query', {
-				'./postgres': { one: stub }
-			});
+			stubs.one.resetHistory();
 		});
 		describe('when `true` is provided', () => {
 			it('should return a promise', () =>
@@ -150,13 +151,13 @@ describe('lib/db/query', () => {
 					.that.is.fulfilled
 			);
 			it('should pass SQL to the database library', () =>
-				expect(stub).to.have.been.calledOnce
+				expect(stubs.one).to.have.been.calledOnce
 					.and.to.have.been.calledWith(totalCountSQL)
 			);
 		});
 		describe('when `false` is provided', () => {
 			before(() => {
-				stub.resetHistory();
+				stubs.one.resetHistory();
 			});
 			it('should return a promise', () =>
 				expect(fakeQuery.searchTotals(false))
@@ -164,7 +165,7 @@ describe('lib/db/query', () => {
 					.that.is.fulfilled
 			);
 			it('should pass SQL to the database library with the "today" where clause', () =>
-				expect(stub).to.have.been.calledOnce
+				expect(stubs.one).to.have.been.calledOnce
 					.and.to.have.been.calledWith(totalCountSQL + forTodaySQL)
 			);
 		});
@@ -174,14 +175,8 @@ describe('lib/db/query', () => {
 		const dateFrom = '2000-01-30';
 		const dateTo = '2000-02-02';
 		const group = 'HMRC';
-		let fakeQuery;
-		let stub;
 		before(() => {
-			stub = sinon.stub();
-			stub.returns(Promise.resolve());
-			fakeQuery = proxyquire('../../../../src/lib/db/query', {
-				'./postgres': { one: stub }
-			});
+			stubs.one.resetHistory();
 		});
 		describe('when function is called with arguments', () => {
 			it('should return a promise', () =>
@@ -190,13 +185,13 @@ describe('lib/db/query', () => {
 					.that.is.fulfilled
 			);
 			it('should build an sql statement when `to, from and group` are provided', () =>
-				expect(stub).to.have.been.calledOnce
+				expect(stubs.one).to.have.been.calledOnce
 					.and.to.have.been.calledWith(fixtures.searchTimePeriodByGroup.fromToGroupSQL)
 			);
 		});
 		describe('when function is called with empty dates', () => {
 			before(() => {
-				stub.resetHistory();
+				stubs.one.resetHistory();
 			});
 			it('should return a promise', () =>
 				expect(fakeQuery.searchTimePeriodByGroup('', '', group))
@@ -204,7 +199,7 @@ describe('lib/db/query', () => {
 					.that.is.fulfilled
 			);
 			it('should build an sql statement when to and from dates are not provided', () =>
-				expect(stub).to.have.been.calledOnce
+				expect(stubs.one).to.have.been.calledOnce
 					.and.to.have.been.calledWith(fixtures.searchTimePeriodByGroup.gorupOnlySQL)
 			);
 		});
