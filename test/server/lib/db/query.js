@@ -141,29 +141,22 @@ describe('lib/db/query', () => {
 		const totalCountSQL = query.__get__('totalCount');
 		// eslint-disable-next-line no-underscore-dangle
 		const forTodaySQL = query.__get__('forToday');
-		before(() => {
-			stubs.one.resetHistory();
-		});
 		describe('when `true` is provided', () => {
-			it('should return a promise', () =>
-				expect(fakeQuery.searchTotals(true))
-					.to.be.an.instanceOf(Promise)
-					.that.is.fulfilled
-			);
+			before(() => {
+				stubs.one.resetHistory();
+				fakeQuery.searchTotals(true);
+			});
 			it('should pass SQL to the database library', () =>
 				expect(stubs.one).to.have.been.calledOnce
 					.and.to.have.been.calledWith(totalCountSQL)
 			);
 		});
+
 		describe('when `false` is provided', () => {
 			before(() => {
 				stubs.one.resetHistory();
+				fakeQuery.searchTotals(false);
 			});
-			it('should return a promise', () =>
-				expect(fakeQuery.searchTotals(false))
-					.to.be.an.instanceOf(Promise)
-					.that.is.fulfilled
-			);
 			it('should pass SQL to the database library with the "today" where clause', () =>
 				expect(stubs.one).to.have.been.calledOnce
 					.and.to.have.been.calledWith(totalCountSQL + forTodaySQL)
@@ -177,27 +170,17 @@ describe('lib/db/query', () => {
 		const group = 'HMRC';
 		before(() => {
 			stubs.one.resetHistory();
+			fakeQuery.searchTimePeriodByGroup(dateFrom, dateTo, group);
 		});
-		describe('when function is called with arguments', () => {
-			it('should return a promise', () =>
-				expect(fakeQuery.searchTimePeriodByGroup(dateFrom, dateTo, group))
-					.to.be.an.instanceOf(Promise)
-					.that.is.fulfilled
-			);
-			it('should build an sql statement when `to, from and group` are provided', () =>
-				expect(stubs.one).to.have.been.calledOnce
-					.and.to.have.been.calledWith(fixtures.searchTimePeriodByGroup.fromToGroupSQL)
-			);
-		});
+		it('should build an sql statement when `to, from and group` are provided', () =>
+			expect(stubs.one).to.have.been.calledOnce
+				.and.to.have.been.calledWith(fixtures.searchTimePeriodByGroup.fromToGroupSQL)
+		);
 		describe('when function is called with empty dates', () => {
 			before(() => {
 				stubs.one.resetHistory();
+				fakeQuery.searchTimePeriodByGroup('', '', group);
 			});
-			it('should return a promise', () =>
-				expect(fakeQuery.searchTimePeriodByGroup('', '', group))
-					.to.be.an.instanceOf(Promise)
-					.that.is.fulfilled
-			);
 			it('should build an sql statement when to and from dates are not provided', () =>
 				expect(stubs.one).to.have.been.calledOnce
 					.and.to.have.been.calledWith(fixtures.searchTimePeriodByGroup.gorupOnlySQL)
