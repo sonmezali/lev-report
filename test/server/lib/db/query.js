@@ -165,16 +165,16 @@ describe('lib/db/query', () => {
 	});
 
 	describe('searchTimePeriodByGroup function', () => {
-		const dateFrom = '2000-01-30';
-		const dateTo = '2000-02-02';
+		const from = '2000-01-30';
+		const to = '2000-02-02';
 		const group = 'HMRC';
 		before(() => {
 			stubs.one.resetHistory();
-			fakeQuery.searchTimePeriodByGroup(dateFrom, dateTo, group);
+			fakeQuery.searchTimePeriodByGroup(from, to, group);
 		});
 		it('should build an sql statement when `to, from and group` are provided', () =>
 			expect(stubs.one).to.have.been.calledOnce
-				.and.to.have.been.calledWith(fixtures.searchTimePeriodByGroup.fromToGroupSQL)
+				.and.to.have.been.calledWith(fixtures.searchTimePeriodByGroup.fromToGroupSQL, { from, to, group })
 		);
 		describe('when function is called with empty dates', () => {
 			before(() => {
@@ -183,7 +183,7 @@ describe('lib/db/query', () => {
 			});
 			it('should build an sql statement when to and from dates are not provided', () =>
 				expect(stubs.one).to.have.been.calledOnce
-					.and.to.have.been.calledWith(fixtures.searchTimePeriodByGroup.gorupOnlySQL)
+					.and.to.have.been.calledWith(fixtures.searchTimePeriodByGroup.gorupOnlySQL, { group })
 			);
 		});
 	});
