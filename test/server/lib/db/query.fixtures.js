@@ -1,5 +1,10 @@
 
 module.exports = {
+  searchTotals: {
+    totalCountSQL: `SELECT count(*)::INTEGER FROM lev_audit`,
+    todayCountSQL: `SELECT count(*)::INTEGER FROM lev_audit WHERE date_time::DATE = current_date`
+  },
+
   searchTimePeriodByGroup: {
     fromToGroupSQL: `SELECT count(*)::INTEGER
 FROM lev_audit

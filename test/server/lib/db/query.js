@@ -137,10 +137,6 @@ describe('lib/db/query', () => {
 	});
 
 	describe('searchTotals function', () => {
-		// eslint-disable-next-line no-underscore-dangle
-		const totalCountSQL = query.__get__('totalCount');
-		// eslint-disable-next-line no-underscore-dangle
-		const forTodaySQL = query.__get__('forToday');
 		describe('when `true` is provided', () => {
 			before(() => {
 				stubs.one.resetHistory();
@@ -148,7 +144,7 @@ describe('lib/db/query', () => {
 			});
 			it('should pass SQL to the database library', () =>
 				expect(stubs.one).to.have.been.calledOnce
-					.and.to.have.been.calledWith(totalCountSQL)
+					.and.to.have.been.calledWith(fixtures.searchTotals.totalCountSQL)
 			);
 		});
 
@@ -159,7 +155,7 @@ describe('lib/db/query', () => {
 			});
 			it('should pass SQL to the database library with the "today" where clause', () =>
 				expect(stubs.one).to.have.been.calledOnce
-					.and.to.have.been.calledWith(totalCountSQL + forTodaySQL)
+					.and.to.have.been.calledWith(fixtures.searchTotals.todayCountSQL)
 			);
 		});
 	});
