@@ -136,6 +136,106 @@ describe('lib/db/query', () => {
 		});
 	});
 
+	describe('usageByDateType', () => {
+		const from = 'yesterday', to = 'today', group = 'group';
+		describe('when called with from date', () => {
+			before(() => {
+				stubs.manyOrNone.resetHistory();
+				fakeQuery.usageByDateType(from);
+			});
+			it('should build an SQL statement with `from` date filter', () =>
+				expect(stubs.manyOrNone).to.have.been.calledOnce
+					.and.to.have.been.calledWith(fixtures.usageByDateType.fromDateOnlySQL, { from })
+			);
+
+			describe('and to date, and group', () => {
+				before(() => {
+					stubs.manyOrNone.resetHistory();
+					fakeQuery.usageByDateType(from, to, group);
+				});
+				it('should build an SQL statement with `from`/`to` date and `group` filters', () =>
+					expect(stubs.manyOrNone).to.have.been.calledOnce
+						.and.to.have.been.calledWith(fixtures.usageByDateType.allParametersSQL, { from, to, group })
+				);
+			});
+		});
+	});
+
+	describe('usageByType', () => {
+		const from = 'yesterday', to = 'today';
+		describe('when called with from date', () => {
+			before(() => {
+				stubs.manyOrNone.resetHistory();
+				fakeQuery.usageByType(from);
+			});
+			it('should build an SQL statement with `from` date filter', () =>
+				expect(stubs.manyOrNone).to.have.been.calledOnce
+					.and.to.have.been.calledWith(fixtures.usageByType.fromDateSQL, { from })
+			);
+
+			describe('and to date, and group', () => {
+				before(() => {
+					stubs.manyOrNone.resetHistory();
+					fakeQuery.usageByType(from, to);
+				});
+				it('should build an SQL statement with `from`/`to` date filters', () =>
+					expect(stubs.manyOrNone).to.have.been.calledOnce
+						.and.to.have.been.calledWith(fixtures.usageByType.fromToSQL, { from, to })
+				);
+			});
+		});
+	});
+
+	describe('usageByGroup', () => {
+		const from = 'yesterday', to = 'today';
+		describe('when called with from date', () => {
+			before(() => {
+				stubs.manyOrNone.resetHistory();
+				fakeQuery.usageByGroup(from);
+			});
+			it('should build an SQL statement with `from` date filter', () =>
+				expect(stubs.manyOrNone).to.have.been.calledOnce
+					.and.to.have.been.calledWith(fixtures.usageByGroup.fromDateSQL, { from })
+			);
+
+			describe('and to date, and group', () => {
+				before(() => {
+					stubs.manyOrNone.resetHistory();
+					fakeQuery.usageByGroup(from, to);
+				});
+				it('should build an SQL statement with `from`/`to` date filters', () =>
+					expect(stubs.manyOrNone).to.have.been.calledOnce
+						.and.to.have.been.calledWith(fixtures.usageByGroup.fromToSQL, { from, to })
+				);
+			});
+		});
+	});
+
+	describe('usageByUser', () => {
+		const from = 'yesterday', to = 'today';
+		describe('when called with from date', () => {
+			before(() => {
+				stubs.manyOrNone.resetHistory();
+				fakeQuery.usageByUser(from);
+			});
+			it('should build an SQL statement with `from` date filter', () =>
+				expect(stubs.manyOrNone).to.have.been.calledOnce
+					.and.to.have.been.calledWith(fixtures.usageByUser.fromDateSQL, { from })
+			);
+
+			describe('and to date, and group', () => {
+				before(() => {
+					stubs.manyOrNone.resetHistory();
+					fakeQuery.usageByUser(from, to);
+				});
+				it('should build an SQL statement with `from`/`to` date filters', () =>
+					expect(stubs.manyOrNone).to.have.been.calledOnce
+						.and.to.have.been.calledWith(fixtures.usageByUser.fromToSQL, { from, to })
+				);
+			});
+		});
+	});
+
 	describe('searchTotals function', () => {
 		describe('when `true` is provided', () => {
 			before(() => {
