@@ -1,7 +1,7 @@
 'use strict';
 
 const dateFormat = 'YYYY-MM-DD HH:mm:ss';
-const moment = require('moment');
+const moment = require('moment-timezone');
 const model = require('./model');
 const dashboardModel = require('./dashboard-model');
 const { LevDashboard, LevReport } = require('lev-react-components');
@@ -13,7 +13,7 @@ const promiseResponder = (promise, req, res, next, component) => promise
     return next(err);
   });
 
-const dateChecker = d => !!d && moment(d, dateFormat).isValid() && d;
+const dateChecker = (d, m = moment(d, dateFormat)) => !!d && m.isValid() && m.tz('Europe/London').toISOString();
 
 module.exports = server => {
   server.get('/readiness', (req, res) => res.send('OK'));
@@ -41,7 +41,7 @@ module.exports = server => {
     const searchGroup = req.query && req.query.currentGroup;
 
     return promiseResponder(model(
-      (fromDate ? fromDate : moment().startOf('month')),
+      (fromDate ? fromDate : moment().startOf('month').tz('Europe/London').toISOString()),
       toDate,
       searchGroup === 'No group' ? '{}' : searchGroup,
       searchGroup

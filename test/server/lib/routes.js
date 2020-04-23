@@ -15,10 +15,13 @@ describe('lib/routes', () => {
 				);
 			});
 			describe('checks for valid dates', () => {
-				it('should return an ISO formatted date string when the input is a valid date', ()=> {
-					expect(fn('2019-09-03'))
+				it('should return an ISO formatted timestamp string when the input is a valid date', ()=> {
+					expect(fn('2019-06-03'))
 						.to.be.a('string')
-						.and.to.equal('2019-09-03');
+						.and.to.equal('2019-06-02T23:00:00.000Z');
+					expect(fn('2019-12-03'))
+						.to.be.a('string')
+						.and.to.equal('2019-12-03T00:00:00.000Z');
 				});
 			});
 		});

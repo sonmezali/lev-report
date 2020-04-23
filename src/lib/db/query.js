@@ -5,8 +5,8 @@ const db = require('./postgres');
 const groupByTypeGroup = 'GROUP BY name, dataset';
 const totalCount = 'SELECT count(*)::INTEGER FROM lev_audit';
 const forToday = ' WHERE date_time >= (current_date::date)::timestamp';
-const fromDate = 'date_time >= ($(from)::timestamp without time zone) at time zone \'Europe/London\'';
-const toDate = 'date_time < ($(to)::timestamp without time zone) at time zone \'Europe/London\'';
+const fromDate = 'date_time >= $(from)';
+const toDate = 'date_time < $(to)';
 const searchGroup = 'groups::TEXT ILIKE \'%\' || $(group) || \'%\'';
 
 const buildCountsByGroup = (from, to, includeNoGroup = true) => `
