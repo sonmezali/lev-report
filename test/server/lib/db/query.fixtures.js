@@ -1,13 +1,27 @@
 
 module.exports = {
   usageByDateType: {
-    fromDateOnlySQL: `SELECT date_time::DATE AS date, dataset, count(*)::INTEGER FROM lev_audit WHERE date_time::DATE >= $(from) GROUP BY date_time::date, dataset ORDER BY date_time::date`,
-    allParametersSQL: `SELECT date_time::DATE AS date, dataset, count(*)::INTEGER FROM lev_audit WHERE date_time::DATE >= $(from) AND date_time::DATE < $(to) AND groups::TEXT ILIKE '%' || $(group) || '%' GROUP BY date_time::date, dataset ORDER BY date_time::date`
+    fromDateOnlySQL: `SELECT date_time::DATE AS date, dataset, count(*)::INTEGER
+FROM lev_audit
+WHERE date_time >= $(from)
+GROUP BY date, dataset
+ORDER BY date`,
+    allParametersSQL: `SELECT date_time::DATE AS date, dataset, count(*)::INTEGER
+FROM lev_audit
+WHERE date_time >= $(from) AND date_time < $(to) AND groups::TEXT ILIKE '%' || $(group) || '%'
+GROUP BY date, dataset
+ORDER BY date`
   },
 
   usageByType: {
-    fromDateSQL: `SELECT dataset, count(*)::INTEGER FROM lev_audit WHERE date_time > $(from)   GROUP BY dataset`,
-    fromToSQL: `SELECT dataset, count(*)::INTEGER FROM lev_audit WHERE date_time > $(from) AND date_time < $(to)  GROUP BY dataset`
+    fromDateSQL: `SELECT dataset, count(*)::INTEGER
+FROM lev_audit
+WHERE date_time >= $(from)
+GROUP BY dataset`,
+    fromToSQL: `SELECT dataset, count(*)::INTEGER
+FROM lev_audit
+WHERE date_time >= $(from) AND date_time < $(to)
+GROUP BY dataset`
   },
 
   usageByGroup: {
@@ -44,19 +58,27 @@ ORDER BY name~'^/Team' desc, name`
   },
 
   usageByUser: {
-    fromDateSQL: `SELECT date_time::DATE AS date, dataset, username, count(*)::INTEGER FROM lev_audit WHERE date_time > $(from)   GROUP BY date_time::date, dataset, username ORDER BY date_time::date`,
-    fromToSQL: `SELECT date_time::DATE AS date, dataset, username, count(*)::INTEGER FROM lev_audit WHERE date_time > $(from) AND date_time < $(to)  GROUP BY date_time::date, dataset, username ORDER BY date_time::date`
+    fromDateSQL: `SELECT date_time::DATE AS date, dataset, username, count(*)::INTEGER
+FROM lev_audit
+WHERE date_time >= $(from)
+GROUP BY date, dataset, username
+ORDER BY date`,
+    fromToSQL: `SELECT date_time::DATE AS date, dataset, username, count(*)::INTEGER
+FROM lev_audit
+WHERE date_time >= $(from) AND date_time < $(to)
+GROUP BY date, dataset, username
+ORDER BY date`
   },
 
   searchTotals: {
     totalCountSQL: `SELECT count(*)::INTEGER FROM lev_audit`,
-    todayCountSQL: `SELECT count(*)::INTEGER FROM lev_audit WHERE date_time::DATE = current_date`
+    todayCountSQL: `SELECT count(*)::INTEGER FROM lev_audit WHERE date_time >= (current_date::date)::timestamp`
   },
 
   searchTimePeriodByGroup: {
     fromToGroupSQL: `SELECT count(*)::INTEGER
 FROM lev_audit
-WHERE date_time::DATE >= $(from) AND date_time::DATE < $(to) AND groups::TEXT ILIKE '%' || $(group) || '%'`,
+WHERE date_time >= $(from) AND date_time < $(to) AND groups::TEXT ILIKE '%' || $(group) || '%'`,
     gorupOnlySQL: `SELECT count(*)::INTEGER
 FROM lev_audit
 WHERE groups::TEXT ILIKE '%' || $(group) || '%'`
