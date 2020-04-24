@@ -12,28 +12,29 @@ const promiseResponder = (promise, req, res, next, component) => promise
     return next(err);
   });
 
-const dateChecker = (d) => !!d && moment.tz(d, dateFormat, true, 'Europe/London').toISOString();
+const dateChecker = (d) => !!d && moment.tz(d, dateFormat, true, 'Europe/London').format();
 
-const home = (query, ErrorReporter) => {
+const home = (query, ErrorReporter) => new Promise((resolve) => {
   const fromDate = dateChecker(query && query.from);
-  if (ErrorReporter && fromDate === null) {
+  if (ErrorReporter && fromDate === 'Invalid date') {
     throw new ErrorReporter('Must provide "from" date parameter, and optionally a "to" date');
   }
   const toDate = dateChecker(query && query.to);
-  if (ErrorReporter && toDate === null) {
+  if (ErrorReporter && toDate === 'Invalid date') {
     throw new ErrorReporter(`Make sure the date format is "${dateFormat}" (time is ignored)`);
   }
   const searchGroup = query && query.currentGroup;
 
-  return model(
-    (fromDate ? fromDate : moment.tz('Europe/London').startOf('month').toISOString()),
+  return resolve(model(
+    (fromDate ? fromDate : moment.tz('Europe/London').startOf('month').format()),
     toDate,
     searchGroup === 'No group' ? '{}' : searchGroup,
     searchGroup
-  );
-};
+  ));
+});
 
 module.exports = {
+  dateChecker,
   promiseResponder,
   dashboard: dashboardModel,
   home
