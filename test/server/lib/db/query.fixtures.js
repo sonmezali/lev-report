@@ -25,13 +25,12 @@ GROUP BY dataset`
   },
 
   usageByGroup: {
-    fromDateSQL: `
-SELECT name, dataset, SUM(count)::INTEGER AS count
+    fromDateSQL: `SELECT name, dataset, SUM(count)::INTEGER AS count
 FROM (
   SELECT UNNEST(groups) AS name, dataset, COUNT(*)
     FROM lev_audit
     WHERE date_time >= $(from)
-    GROUP BY name, dataset 
+    GROUP BY name, dataset
   UNION
   SELECT 'No group' AS name, dataset, COUNT(*)
     FROM lev_audit
@@ -40,19 +39,16 @@ FROM (
 ) AS counts
 GROUP BY name, dataset
 ORDER BY name~'^/Team' desc, name`,
-    fromToSQL: `
-SELECT name, dataset, SUM(count)::INTEGER AS count
+    fromToSQL: `SELECT name, dataset, SUM(count)::INTEGER AS count
 FROM (
   SELECT UNNEST(groups) AS name, dataset, COUNT(*)
     FROM lev_audit
-    WHERE date_time >= $(from)
-      AND date_time < $(to)
-    GROUP BY name, dataset 
+    WHERE date_time >= $(from) AND date_time < $(to)
+    GROUP BY name, dataset
   UNION
   SELECT 'No group' AS name, dataset, COUNT(*)
     FROM lev_audit
-    WHERE groups='{}' AND date_time >= $(from)
-      AND date_time < $(to)
+    WHERE groups='{}' AND date_time >= $(from) AND date_time < $(to)
     GROUP BY name, dataset
 ) AS counts
 GROUP BY name, dataset

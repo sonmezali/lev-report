@@ -2,28 +2,11 @@
 
 const db = require('./postgres');
 
-const groupByTypeGroup = 'GROUP BY name, dataset';
 const totalCount = 'SELECT count(*)::INTEGER FROM lev_audit';
 const forToday = ' WHERE date_time >= (current_date::date)::timestamp';
 const fromDate = 'date_time >= $(from)';
 const toDate = 'date_time < $(to)';
 const searchGroup = 'groups::TEXT ILIKE \'%\' || $(group) || \'%\'';
-
-const buildCountsByGroup = (from, to, includeNoGroup = true) => `
-SELECT name, dataset, SUM(count)::INTEGER AS count
-FROM (
-  SELECT UNNEST(groups) AS name, dataset, COUNT(*)
-    FROM lev_audit
-    WHERE ${fromDate}${to ? '\n      AND ' + toDate : ''}
-    ${groupByTypeGroup} ${includeNoGroup ? `
-  UNION
-  SELECT 'No group' AS name, dataset, COUNT(*)
-    FROM lev_audit
-    WHERE groups='{}' AND ${fromDate}${to ? '\n      AND ' + toDate : ''}` : ''}
-    ${groupByTypeGroup}
-) AS counts
-${groupByTypeGroup}
-ORDER BY name~'^/Team' desc, name`;
 
 const filterObject = (obj) => Object.fromEntries(Object.entries(obj).filter(e => e[1]));
 
@@ -63,7 +46,24 @@ module.exports = {
       throw new Error('Could not fetch data');
     }),
 
-  usageByGroup: (from, to) => db.manyOrNone(buildCountsByGroup(from, to),
+  usageByGroup: (from, to) => db.manyOrNone(
+    sqlBuilder({
+      'SELECT': 'name, dataset, SUM(count)::INTEGER AS count',
+      'FROM': '(',
+      ' ': 'SELECT UNNEST(groups) AS name, dataset, COUNT(*)',
+      '    FROM': 'lev_audit',
+      '    WHERE': [from && fromDate, to && toDate],
+      '    GROUP BY': 'name, dataset',
+      '  UNION\n ': sqlBuilder({
+      'SELECT': '\'No group\' AS name, dataset, COUNT(*)',
+      '    FROM': 'lev_audit',
+      '    WHERE': ['groups=\'{}\'', from && fromDate, to && toDate],
+      '    GROUP BY': 'name, dataset'
+      }, '\n'),
+      ') AS': 'counts',
+      'GROUP BY': 'name, dataset',
+      'ORDER BY': 'name~\'^/Team\' desc, name'
+    }, '\n'),
     filterObject({ from: from, to: to }))
     .catch(e => {
       global.logger.error(`Problem retrieving counts for groups between: ${from} and ${to || 'now'}`, e);
