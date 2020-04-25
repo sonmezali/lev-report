@@ -1,9 +1,9 @@
 'use strict';
 
 const db = require('./postgres');
+const moment = require('moment-timezone');
 
 const totalCount = 'SELECT count(*)::INTEGER FROM lev_audit';
-const forToday = ' WHERE date_time >= (current_date::date)::timestamp';
 const fromDate = 'date_time >= $(from)';
 const toDate = 'date_time < $(to)';
 const searchGroup = 'groups::TEXT ILIKE \'%\' || $(group) || \'%\'';
@@ -85,7 +85,10 @@ module.exports = {
     }),
 
   searchTotals: (isAllTimeCount) =>
-      db.one(`${isAllTimeCount ? totalCount : totalCount + forToday}`, [], data => data.count)
+      db.one(
+        `${isAllTimeCount ? totalCount : `${totalCount} WHERE ${fromDate}`}`,
+        isAllTimeCount ? [] : [moment.tz('Europe/London').startOf('day').format()],
+        data => data.count)
       .catch(e => {
         global.logger.error(`Problem retrieving ${isAllTimeCount ? 'an all time count' : 'a count for today'}`, e);
         throw new Error('Could not fetch data');

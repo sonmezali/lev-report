@@ -70,7 +70,7 @@ ORDER BY date`
 
   searchTotals: {
     totalCountSQL: `SELECT count(*)::INTEGER FROM lev_audit`,
-    todayCountSQL: `SELECT count(*)::INTEGER FROM lev_audit WHERE date_time >= (current_date::date)::timestamp`
+    todayCountSQL: `SELECT count(*)::INTEGER FROM lev_audit WHERE date_time >= $(from)`
   },
 
   searchTimePeriodByGroup: {

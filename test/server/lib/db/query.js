@@ -1,6 +1,7 @@
 'use strict';
 
 const proxyquire = require('proxyquire');
+const timeshift = require('timeshift');
 const fixtures = require('./query.fixtures');
 const rewire = require('rewire');
 const query = rewire('../../../../src/lib/db/query');
@@ -251,12 +252,14 @@ describe('lib/db/query', () => {
 		describe('when `false` is provided', () => {
 			before(() => {
 				stubs.one.resetHistory();
+				timeshift('2020-06-06');
 				fakeQuery.searchTotals(false);
 			});
-			it('should pass SQL to the database library with the "today" where clause', () =>
+			it('should pass SQL to the database library with the timestamp for the beginning of the day', () =>
 				expect(stubs.one).to.have.been.calledOnce
-					.and.to.have.been.calledWith(fixtures.searchTotals.todayCountSQL)
+					.and.to.have.been.calledWith(fixtures.searchTotals.todayCountSQL, ['2020-06-06T00:00:00+01:00'])
 			);
+			after('restore current time', () => timeshift());
 		});
 	});
 
