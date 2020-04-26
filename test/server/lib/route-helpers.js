@@ -3,9 +3,10 @@
 const moment = require('moment');
 const timeshift = require('timeshift');
 const stub = sinon.stub().resolves('finished');
-const { dateChecker, promiseResponder, dashboard, home } = require('proxyquire')('../../../src/lib/route-helpers', {
-	'./model': stub
-});
+const { dateChecker, promiseResponder, dashboard, home, homeError } =
+	require('proxyquire')('../../../src/lib/route-helpers', {
+		'./model': stub
+	});
 
 describe('lib/routesHelpers', () => {
 	describe('dateChecker', () => {
@@ -30,17 +31,23 @@ describe('lib/routesHelpers', () => {
 		const next = sinon.stub();
 		const render = sinon.stub();
 		const send = sinon.stub();
-		const args = [Promise.resolve('data'), {}, { render, send }, next];
+		const promise = sinon.stub().resolves('data');
+		const args = [{ query: 'query' }, { render, send }, next];
+		const req = args[0];
 		it('should return a promise', () =>
-			expect(promiseResponder(...args))
+			expect(promiseResponder(promise)(...args))
 				.to.be.an.instanceOf(Promise)
 				.that.is.fulfilled);
-		it('should have send promise data', () =>
+		it('should have passed query string from request to the promise function', () =>
+			expect(promise)
+				.to.have.been.calledOnce
+				.and.to.have.been.calledWith(req.query));
+		it('should send data from promise', () =>
 			expect(send)
 				.to.have.been.calledOnce
 				.and.to.have.been.calledWith('data'));
 		describe('when a component is provided', () => {
-			before(() => promiseResponder(...args, 'component'));
+			before(() => promiseResponder(promise, 'component')(...args));
 			it('should render the component with the data', () =>
 				expect(render)
 					.to.have.been.calledOnce
@@ -65,7 +72,7 @@ describe('lib/routesHelpers', () => {
 				describe('when dates are provided', () => {
 					before(() => stub.resetHistory());
 					it('should fetch model data', () =>
-						expect(home({ from: '2020-12-07', to: '2020-12-12' }))
+						expect(home({from: '2020-12-07', to: '2020-12-12'}))
 							.to.be.an.instanceOf(Promise)
 							.that.eventually.equal('finished'));
 					it('should request model data from the given range', () =>
@@ -92,7 +99,7 @@ describe('lib/routesHelpers', () => {
 				describe('when dates are provided', () => {
 					before(() => stub.resetHistory());
 					it('should fetch model data', () =>
-						expect(home({ from: '2020-06-07', to: '2020-06-12' }))
+						expect(home({from: '2020-06-07', to: '2020-06-12'}))
 							.to.be.an.instanceOf(Promise)
 							.that.eventually.equal('finished'));
 					it('should request model data from the given range', () =>
@@ -106,7 +113,7 @@ describe('lib/routesHelpers', () => {
 			describe('when a group is specified', () => {
 				before(() => stub.resetHistory());
 				it('should fetch model data', () =>
-					expect(home({ currentGroup: 'a group' }))
+					expect(home({currentGroup: 'a group'}))
 						.to.be.an.instanceOf(Promise)
 						.that.eventually.equal('finished'));
 				it('should request model data from the given range', () =>
@@ -114,13 +121,16 @@ describe('lib/routesHelpers', () => {
 						.to.have.been.calledOnce
 						.and.to.have.been.calledWith(stub.firstCall.args[0], false, 'a group', 'a group'));
 			});
+		});
+	});
 
-			describe('when an error constructor is provided', () => {
-				it('should fail with an error when passed a bunk date', () =>
-					expect(home({ from: '2020-20-20' }, Error))
-						.to.be.an.instanceOf(Promise)
-						.that.is.eventually.rejectedWith(Error, 'Must provide "from" date parameter, and optionally a "to" date'));
-			});
+	describe('homeError', () => {
+		describe('adds an error constructor to the "home" route handler', () => {
+			it('should fail with an error when passed a bunk date', () =>
+				expect(
+					homeError(Error)({ from: '2020-20-20' }))
+					.to.be.an.instanceOf(Promise)
+					.that.is.eventually.rejectedWith(Error, 'Must provide "from" date parameter, and optionally a "to" date'));
 		});
 	});
 });

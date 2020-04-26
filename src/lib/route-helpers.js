@@ -5,8 +5,8 @@ const moment = require('moment-timezone');
 const model = require('./model');
 const dashboardModel = require('./dashboard-model');
 
-const promiseResponder = (promise, req, res, next, component) => promise
-  .then(data => component ? res.render(component, data) : res.send(data))
+const promiseResponder = (promise, Component) => (req, res, next) => promise(req.query)
+  .then(data => Component ? res.render(Component, data) : res.send(data))
   .catch(err => {
     req.log.error(err);
     return next(err);
@@ -37,5 +37,6 @@ module.exports = {
   dateChecker,
   promiseResponder,
   dashboard: dashboardModel,
-  home
+  home,
+  homeError: ErrorReporter => req => home(req, ErrorReporter)
 };
