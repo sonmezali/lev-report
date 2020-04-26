@@ -1,8 +1,17 @@
 'use strict';
 
 const proxyquire = require('proxyquire');
+const timeshift = require('timeshift');
+const fixtures = require('./query.fixtures');
 const rewire = require('rewire');
 const query = rewire('../../../../src/lib/db/query');
+const stubs = {
+	one: sinon.stub().resolves(),
+	manyOrNone: sinon.stub().resolves()
+};
+const fakeQuery = proxyquire('../../../../src/lib/db/query', {
+	'./postgres': stubs
+});
 
 describe('lib/db/query', () => {
 	describe('helper functions', () => {
@@ -99,100 +108,181 @@ describe('lib/db/query', () => {
 				});
 
 				describe('select with grouping', () => {
+					const sqlObj = {
+						'SELECT': 'first_name, surname, COUNT(*)',
+						'FROM': 'aTable',
+						'GROUP BY': 'first_name, surname'
+					};
+
 					it('should return a query, built from the select, from and grouping fields', () =>
-						expect(fn({
-							'SELECT': 'first_name, surname, COUNT(*)',
-							'FROM': 'aTable',
-							'GROUP BY': 'first_name, surname'
-						}))
+						expect(fn(sqlObj))
 							.to.be.a('string')
 							.that.equals('SELECT first_name, surname, COUNT(*) FROM aTable GROUP BY first_name, surname')
 					);
+
+					describe('when a custom "joiner" is specified', () => {
+						it('should return the same query, using the specified "joiner" character', () =>
+							expect(fn(sqlObj, '\n'))
+								.to.be.a('string')
+								.that.equals('SELECT first_name, surname, COUNT(*)\nFROM aTable\nGROUP BY first_name, surname')
+						);
+						it('should return the same query, using the specified "joiner" string', () =>
+							expect(fn(sqlObj, '\n  '))
+								.to.be.a('string')
+								.that.equals('SELECT first_name, surname, COUNT(*)\n  FROM aTable\n  GROUP BY first_name, surname')
+						);
+					});
 				});
 			});
 		});
 	});
 
-	describe('searchTotals function', () => {
-		// eslint-disable-next-line no-underscore-dangle
-		const totalCountSQL = query.__get__('totalCount');
-		// eslint-disable-next-line no-underscore-dangle
-		const forTodaySQL = query.__get__('forToday');
-		let fakeQuery;
-		let stub;
-		before(() => {
-			stub = sinon.stub();
-			stub.returns(Promise.resolve());
-			fakeQuery = proxyquire('../../../../src/lib/db/query', {
-				'./postgres': { one: stub }
+	describe('usageByDateType', () => {
+		const from = 'yesterday', to = 'today', group = 'group';
+		describe('when called with from date', () => {
+			before(() => {
+				stubs.manyOrNone.resetHistory();
+				fakeQuery.usageByDateType(from);
+			});
+			it('should build an SQL statement with `from` date filter', () =>
+				expect(stubs.manyOrNone).to.have.been.calledOnce
+					.and.to.have.been.calledWith(fixtures.usageByDateType.fromDateOnlySQL, { from })
+			);
+
+			describe('and to date, and group', () => {
+				before(() => {
+					stubs.manyOrNone.resetHistory();
+					fakeQuery.usageByDateType(from, to, group);
+				});
+				it('should build an SQL statement with `from`/`to` date and `group` filters', () =>
+					expect(stubs.manyOrNone).to.have.been.calledOnce
+						.and.to.have.been.calledWith(fixtures.usageByDateType.allParametersSQL, { from, to, group })
+				);
 			});
 		});
-		describe('when `true` is provided', () => {
-			it('should return a promise', () =>
-				expect(fakeQuery.searchTotals(true))
-					.to.be.an.instanceOf(Promise)
-					.that.is.fulfilled
+	});
+
+	describe('usageByType', () => {
+		const from = 'yesterday', to = 'today';
+		describe('when called with from date', () => {
+			before(() => {
+				stubs.manyOrNone.resetHistory();
+				fakeQuery.usageByType(from);
+			});
+			it('should build an SQL statement with `from` date filter', () =>
+				expect(stubs.manyOrNone).to.have.been.calledOnce
+					.and.to.have.been.calledWith(fixtures.usageByType.fromDateSQL, { from })
 			);
+
+			describe('and to date, and group', () => {
+				before(() => {
+					stubs.manyOrNone.resetHistory();
+					fakeQuery.usageByType(from, to);
+				});
+				it('should build an SQL statement with `from`/`to` date filters', () =>
+					expect(stubs.manyOrNone).to.have.been.calledOnce
+						.and.to.have.been.calledWith(fixtures.usageByType.fromToSQL, { from, to })
+				);
+			});
+		});
+	});
+
+	describe('usageByGroup', () => {
+		const from = 'yesterday', to = 'today';
+		describe('when called with from date', () => {
+			before(() => {
+				stubs.manyOrNone.resetHistory();
+				fakeQuery.usageByGroup(from);
+			});
+			it('should build an SQL statement with `from` date filter', () =>
+				expect(stubs.manyOrNone).to.have.been.calledOnce
+					.and.to.have.been.calledWith(fixtures.usageByGroup.fromDateSQL, { from })
+			);
+
+			describe('and to date, and group', () => {
+				before(() => {
+					stubs.manyOrNone.resetHistory();
+					fakeQuery.usageByGroup(from, to);
+				});
+				it('should build an SQL statement with `from`/`to` date filters', () =>
+					expect(stubs.manyOrNone).to.have.been.calledOnce
+						.and.to.have.been.calledWith(fixtures.usageByGroup.fromToSQL, { from, to })
+				);
+			});
+		});
+	});
+
+	describe('usageByUser', () => {
+		const from = 'yesterday', to = 'today';
+		describe('when called with from date', () => {
+			before(() => {
+				stubs.manyOrNone.resetHistory();
+				fakeQuery.usageByUser(from);
+			});
+			it('should build an SQL statement with `from` date filter', () =>
+				expect(stubs.manyOrNone).to.have.been.calledOnce
+					.and.to.have.been.calledWith(fixtures.usageByUser.fromDateSQL, { from })
+			);
+
+			describe('and to date, and group', () => {
+				before(() => {
+					stubs.manyOrNone.resetHistory();
+					fakeQuery.usageByUser(from, to);
+				});
+				it('should build an SQL statement with `from`/`to` date filters', () =>
+					expect(stubs.manyOrNone).to.have.been.calledOnce
+						.and.to.have.been.calledWith(fixtures.usageByUser.fromToSQL, { from, to })
+				);
+			});
+		});
+	});
+
+	describe('searchTotals function', () => {
+		describe('when `true` is provided', () => {
+			before(() => {
+				stubs.one.resetHistory();
+				fakeQuery.searchTotals(true);
+			});
 			it('should pass SQL to the database library', () =>
-				expect(stub).to.have.been.calledOnce
-					.and.to.have.been.calledWith(totalCountSQL)
+				expect(stubs.one).to.have.been.calledOnce
+					.and.to.have.been.calledWith(fixtures.searchTotals.totalCountSQL)
 			);
 		});
+
 		describe('when `false` is provided', () => {
 			before(() => {
-				stub.resetHistory();
+				stubs.one.resetHistory();
+				timeshift('2020-06-06');
+				fakeQuery.searchTotals(false);
 			});
-			it('should return a promise', () =>
-				expect(fakeQuery.searchTotals(false))
-					.to.be.an.instanceOf(Promise)
-					.that.is.fulfilled
+			it('should pass SQL to the database library with the timestamp for the beginning of the day', () =>
+				expect(stubs.one).to.have.been.calledOnce
+					.and.to.have.been.calledWith(fixtures.searchTotals.todayCountSQL, ['2020-06-06T00:00:00+01:00'])
 			);
-			it('should pass SQL to the database library with the "today" where clause', () =>
-				expect(stub).to.have.been.calledOnce
-					.and.to.have.been.calledWith(totalCountSQL + forTodaySQL)
-			);
+			after('restore current time', () => timeshift());
 		});
 	});
 
 	describe('searchTimePeriodByGroup function', () => {
-		const dateFrom = '2000-01-30';
-		const dateTo = '2000-02-02';
+		const from = '2000-01-30';
+		const to = '2000-02-02';
 		const group = 'HMRC';
-		let fakeQuery;
-		let stub;
 		before(() => {
-			stub = sinon.stub();
-			stub.returns(Promise.resolve());
-			fakeQuery = proxyquire('../../../../src/lib/db/query', {
-				'./postgres': { one: stub }
-			});
+			stubs.one.resetHistory();
+			fakeQuery.searchTimePeriodByGroup(from, to, group);
 		});
-		describe('when function is called with arguments', () => {
-			it('should return a promise', () =>
-				expect(fakeQuery.searchTimePeriodByGroup(dateFrom, dateTo, group))
-					.to.be.an.instanceOf(Promise)
-					.that.is.fulfilled
-			);
-			it('should build an sql statement when `to, from and group` are provided', () =>
-				expect(stub).to.have.been.calledOnce
-					.and.to.have.been.calledWith('SELECT count(*)::INTEGER FROM lev_audit ' +
-					'WHERE date_time::DATE >= $(from) AND date_time::DATE < $(to) ' +
-					'AND groups::TEXT ILIKE \'%\' || $(group) || \'%\'')
-			);
-		});
+		it('should build an sql statement when `to, from and group` are provided', () =>
+			expect(stubs.one).to.have.been.calledOnce
+				.and.to.have.been.calledWith(fixtures.searchTimePeriodByGroup.fromToGroupSQL, { from, to, group })
+		);
 		describe('when function is called with empty dates', () => {
 			before(() => {
-				stub.resetHistory();
+				stubs.one.resetHistory();
+				fakeQuery.searchTimePeriodByGroup('', '', group);
 			});
-			it('should return a promise', () =>
-				expect(fakeQuery.searchTimePeriodByGroup('', '', group))
-					.to.be.an.instanceOf(Promise)
-					.that.is.fulfilled
-			);
 			it('should build an sql statement when to and from dates are not provided', () =>
-				expect(stub).to.have.been.calledOnce
-					.and.to.have.been.calledWith('SELECT count(*)::INTEGER FROM lev_audit ' +
-					'WHERE groups::TEXT ILIKE \'%\' || $(group) || \'%\'')
+				expect(stubs.one).to.have.been.calledOnce
+					.and.to.have.been.calledWith(fixtures.searchTimePeriodByGroup.gorupOnlySQL, { group })
 			);
 		});
 	});
