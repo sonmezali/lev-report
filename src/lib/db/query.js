@@ -87,7 +87,7 @@ module.exports = {
   searchTotals: (isAllTimeCount) =>
       db.one(
         `${isAllTimeCount ? totalCount : `${totalCount} WHERE ${fromDate}`}`,
-        isAllTimeCount ? [] : [moment.tz('Europe/London').startOf('day').format()],
+        isAllTimeCount ? [] : { from: moment.tz('Europe/London').startOf('day').format() },
         data => data.count)
       .catch(e => {
         global.logger.error(`Problem retrieving ${isAllTimeCount ? 'an all time count' : 'a count for today'}`, e);
