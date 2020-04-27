@@ -245,7 +245,7 @@ describe('lib/db/query', () => {
 			});
 			it('should pass SQL to the database library', () =>
 				expect(stubs.one).to.have.been.calledOnce
-					.and.to.have.been.calledWith(fixtures.searchTotals.totalCountSQL)
+					.and.to.have.been.calledWith(fixtures.searchTotals.totalCountSQL, [])
 			);
 		});
 
@@ -257,7 +257,7 @@ describe('lib/db/query', () => {
 			});
 			it('should pass SQL to the database library with the timestamp for the beginning of the day', () =>
 				expect(stubs.one).to.have.been.calledOnce
-					.and.to.have.been.calledWith(fixtures.searchTotals.todayCountSQL, ['2020-06-06T00:00:00+01:00'])
+					.and.to.have.been.calledWith(fixtures.searchTotals.todayCountSQL, { from: '2020-06-06T00:00:00+01:00' })
 			);
 			after('restore current time', () => timeshift());
 		});
