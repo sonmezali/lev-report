@@ -55,7 +55,11 @@ const processGroups = data => data.reduce(
   , []);
 const groupUsage = (dateFrom, dateTo) => query.usageByGroup(dateFrom, dateTo).then(processGroups);
 
-const hours = name => ({ name, data: Array.from({ length: 24 }, (_, n) => ({ count: 0, hour: n })) });
+const hours = (name, colour) => ({
+  name,
+  data: Array.from({ length: 24 }, (_, n) => ({ count: 0, hour: n })),
+  colour
+});
 const dayCounts = (from, to) => (
   (start, end,
    diff = Math.abs(Math.round(moment.duration(start.startOf('day').diff(end.endOf('day'))).as('days'))),
@@ -68,14 +72,14 @@ const dayCounts = (from, to) => (
 )(moment(from, DATE_FORMAT), moment(to, DATE_FORMAT));
 const processHourlyUsage = (nod, data) => {
   const total = nod[0] + nod[1];
-  const traces = [nod[0] && hours('weekday'), nod[1] && hours('weekend')];
-  const average = hours('average').data;
+  const traces = [nod[0] && hours('weekday', '#2746B9'), nod[1] && hours('weekend', '#31BB76')];
+  const average = hours('average', '#0B69D4');
   data.forEach(d => {
     traces[d.weekend].data[d.hour].count = (d.count / nod[d.weekend]);
-    average[d.hour].count += d.count;
+    average.data[d.hour].count += d.count;
   });
   return [...traces, nod[0] && nod[1] && {
-    name: 'average', data: average.map(o => ({ ...o, count: o.count / total }))
+    ...average, data: average.data.map(o => ({ ...o, count: o.count / total }))
   }].filter(e => e);
 };
 const hourlyUsage = (dateFrom, dateTo, searchGroup) => query.hourlyUsage(dateFrom, dateTo, searchGroup)
